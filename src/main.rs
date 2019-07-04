@@ -9,11 +9,10 @@ use winapi::{
     um::winuser::*,
 };
 
-use crate::ui::window::Font;
 use crate::ui::{
     win32::logger::WindowLogger,
     window::{
-        MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
+        Font, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
         WindowMessageHandler, WindowRef,
     },
     MessageLoop,
@@ -32,17 +31,19 @@ impl MainWindow {
         T: AsRef<str>,
     {
         let geometry = WindowGeometry {
-            width: Some(650),
-            height: Some(400),
+            width: Some(700),
+            height: Some(500),
             ..Default::default()
         };
+
+        let main_window = Rc::new(MainWindow {
+            runtime: RefCell::new(Runtime::new().unwrap()),
+        });
 
         let win = WindowBuilder::window("miniraw", None)
             .geometry(geometry)
             .title(title.as_ref())
-            .message_handler(Rc::new(MainWindow {
-                runtime: RefCell::new(Runtime::new().unwrap()),
-            }))
+            .message_handler(main_window)
             .build()?;
 
         Ok(win)
@@ -61,7 +62,7 @@ impl WindowMessageHandler for MainWindow {
                     | ES_AUTOVSCROLL
                     | ES_READONLY;
 
-                let font = Font::new(16, "Consolas");
+                let font = Font::new(14, "Consolas");
 
                 let edit = WindowBuilder::edit_control(message.window.clone())
                     .style(edit_style)
@@ -72,7 +73,10 @@ impl WindowMessageHandler for MainWindow {
 
                 WindowLogger::init(edit.handle(), LevelFilter::Info);
 
-                info!(">>> MiniRAW NG version 1.0 - written by Dmitry Pankratov");
+                info!(
+                    ">>> MiniRAW NG {} by Dmitry Pankratov",
+                    env!("CARGO_PKG_VERSION")
+                );
 
                 self.runtime
                     .borrow_mut()
@@ -101,7 +105,7 @@ impl WindowMessageHandler for MainWindow {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let _ = MainWindow::new("MiniRAW NG 1.0")?;
+    let _ = MainWindow::new(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
     MessageLoop::new().run();
     Ok(())
 }

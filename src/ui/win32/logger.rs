@@ -1,6 +1,5 @@
 use log::{LevelFilter, Metadata, Record};
 use widestring::{WideCStr, WideCString};
-
 use winapi::{
     shared::{
         minwindef::{LPARAM, WPARAM},
@@ -46,7 +45,7 @@ impl log::Log for WindowLogger {
                     let time = time::now();
 
                     let msg = format!(
-                        "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\n",
+                        "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\r\n",
                         old_text,
                         record.level(),
                         time.tm_year + 1900,

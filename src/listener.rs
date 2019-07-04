@@ -1,6 +1,7 @@
 use std::{
     env,
     io::{self, Write},
+    path::PathBuf,
     time,
 };
 
@@ -54,8 +55,10 @@ pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
                     .unwrap()
                     .as_secs();
 
-                let filename = env::current_dir()
-                    .unwrap()
+                let filename = env::current_exe()
+                    .ok()
+                    .and_then(|p| p.parent().map(|p| p.to_owned()))
+                    .unwrap_or_else(|| PathBuf::new())
                     .join(format!("{}.spl", timestamp));
 
                 tokio::fs::File::create(filename.clone())
