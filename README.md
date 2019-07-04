@@ -8,3 +8,7 @@ Compared to the original version mine is:
 
 This is a GUI utility currently working on Windows. Will support other frameworks later.<br/>
 Binary releases can be downloaded from Releases section.
+
+## License
+
+Licensed under MIT or Apache license ([LICENSE-MIT](https://opensource.org/licenses/MIT) or [LICENSE-APACHE](https://opensource.org/licenses/Apache-2.0))
