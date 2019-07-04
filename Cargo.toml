@@ -1,0 +1,13 @@
+[package]
+name = "miniraw"
+version = "0.1.0"
+authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
+edition = "2018"
+
+[dependencies]
+winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }
+widestring = "0.4"
+log = { version = "0.4", features = ["std"] }
+time = "0.1"
+tokio = { version = "0.1", features = ["fs"] }
+futures = "0.1"
