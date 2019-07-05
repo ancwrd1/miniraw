@@ -50,16 +50,23 @@ pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
 
                 let (reader, _) = stream.split();
 
-                let timestamp = time::SystemTime::now()
+                let mut timestamp = time::SystemTime::now()
                     .duration_since(time::UNIX_EPOCH)
                     .unwrap()
                     .as_secs();
 
-                let filename = env::current_exe()
-                    .ok()
-                    .and_then(|p| p.parent().map(|p| p.to_owned()))
-                    .unwrap_or_else(|| PathBuf::new())
-                    .join(format!("{}.spl", timestamp));
+                let filename = loop {
+                    let file = env::current_exe()
+                        .ok()
+                        .and_then(|p| p.parent().map(|p| p.to_owned()))
+                        .unwrap_or_else(|| PathBuf::new())
+                        .join(format!("{}.spl", timestamp));
+                    if !file.exists() {
+                        break file;
+                    } else {
+                        timestamp += 1;
+                    }
+                };
 
                 tokio::fs::File::create(filename.clone())
                     .and_then(|file| {
