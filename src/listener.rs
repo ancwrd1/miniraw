@@ -1,43 +1,9 @@
-use std::{
-    env,
-    io::{self, Write},
-    path::PathBuf,
-    time,
-};
+use std::{env, io, path::PathBuf, time};
 
-use futures::{future::IntoFuture, stream::Stream, try_ready, Async, Future, Poll};
+use futures::future::Loop;
+use futures::{future::IntoFuture, stream::Stream, Future};
 use log::{info, warn};
 use tokio::{io::AsyncRead, net::TcpListener};
-
-struct FileStream {
-    inner: Box<AsyncRead + Send>,
-    buffer: Vec<u8>,
-}
-
-impl FileStream {
-    const CHUNK_SIZE: usize = 32768;
-
-    fn new(reader: Box<AsyncRead + Send>) -> FileStream {
-        FileStream {
-            inner: reader,
-            buffer: vec![0; FileStream::CHUNK_SIZE],
-        }
-    }
-}
-
-impl Stream for FileStream {
-    type Item = Vec<u8>;
-    type Error = io::Error;
-
-    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        let size = try_ready!(self.inner.poll_read(&mut self.buffer));
-        if size > 0 {
-            Ok(Async::Ready(Some(self.buffer[0..size].into())))
-        } else {
-            Ok(Async::Ready(None))
-        }
-    }
-}
 
 pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
     let addr = "0.0.0.0:9100".parse().unwrap();
@@ -50,41 +16,39 @@ pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
 
                 let (reader, _) = stream.split();
 
-                let mut timestamp = time::SystemTime::now()
+                let timestamp = time::SystemTime::now()
                     .duration_since(time::UNIX_EPOCH)
                     .unwrap()
                     .as_secs();
 
-                let filename = loop {
-                    let file = env::current_exe()
+                // get file name atomically in a future loop
+                let target = futures::future::loop_fn(timestamp, |timestamp| {
+                    let filename = format!("{}.spl", timestamp);
+                    let filepath = env::current_exe()
                         .ok()
                         .and_then(|p| p.parent().map(|p| p.to_owned()))
                         .unwrap_or_else(|| PathBuf::new())
-                        .join(format!("{}.spl", timestamp));
-                    if !file.exists() {
-                        break file;
-                    } else {
-                        timestamp += 1;
-                    }
-                };
+                        .join(&filename);
 
-                tokio::fs::File::create(filename.clone())
-                    .and_then(|file| {
-                        FileStream::new(Box::new(reader)).fold(file, |mut writer, bytes| {
-                            writer.write_all(bytes.as_ref()).map(|_| writer)
+                    tokio::fs::OpenOptions::new()
+                        .write(true)
+                        .create_new(true)
+                        .open(filepath)
+                        .and_then(|writer| Ok(Loop::Break((writer, filename))))
+                        .or_else(move |e| {
+                            if e.kind() == io::ErrorKind::AlreadyExists {
+                                Ok(Loop::Continue(timestamp + 1))
+                            } else {
+                                Err(e)
+                            }
                         })
-                    })
-                    .map(move |_| {
-                        info!(
-                            "Saved {} bytes into {}",
-                            std::fs::metadata(&filename).unwrap().len(),
-                            filename
-                                .components()
-                                .last()
-                                .unwrap()
-                                .as_os_str()
-                                .to_string_lossy()
-                        );
+                });
+
+                target
+                    .and_then(|(writer, filename)| {
+                        tokio::io::copy(reader, writer).map(move |(bytes, _, _)| {
+                            info!("Saved {} bytes into {}", bytes, filename);
+                        })
                     })
                     .map_err(|e| {
                         warn!("{}", e);
