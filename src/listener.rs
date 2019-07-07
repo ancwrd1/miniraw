@@ -1,7 +1,10 @@
 use std::{env, io, path::PathBuf, time};
 
-use futures::future::Loop;
-use futures::{future::IntoFuture, stream::Stream, Future};
+use futures::{
+    future::{IntoFuture, Loop},
+    stream::Stream,
+    Future,
+};
 use log::{info, warn};
 use tokio::{io::AsyncRead, net::TcpListener};
 
