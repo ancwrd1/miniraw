@@ -33,11 +33,13 @@ pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
                         .unwrap_or_else(|| PathBuf::new())
                         .join(&filename);
 
+                    let pathcopy = filepath.clone();
+
                     tokio::fs::OpenOptions::new()
                         .write(true)
                         .create_new(true)
                         .open(filepath)
-                        .and_then(|writer| Ok(Loop::Break((writer, filename))))
+                        .and_then(|writer| Ok(Loop::Break((writer, pathcopy))))
                         .or_else(move |e| {
                             if e.kind() == io::ErrorKind::AlreadyExists {
                                 Ok(Loop::Continue(timestamp + 1))
@@ -48,9 +50,18 @@ pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
                 });
 
                 target
-                    .and_then(|(writer, filename)| {
+                    .and_then(|(writer, filepath)| {
                         tokio::io::copy(reader, writer).map(move |(bytes, _, _)| {
-                            info!("Saved {} bytes into {}", bytes, filename);
+                            if bytes > 0 {
+                                info!(
+                                    "Saved {} bytes into {}",
+                                    bytes,
+                                    filepath.file_name().unwrap().to_string_lossy()
+                                );
+                            } else {
+                                warn!("Ignored empty file");
+                                let _ = std::fs::remove_file(filepath);
+                            }
                         })
                     })
                     .map_err(|e| {
