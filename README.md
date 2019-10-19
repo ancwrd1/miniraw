@@ -1,6 +1,7 @@
-## MiniRAW NG - print job listener written in Rust
+## MiniRAW NG - simple print job listener written in Rust
 
-This application is inspired by old "miniraw" utility written by Rocco Lapadula.<br/>
+This application will listen on port 9100 for incoming connections and save the data into files in the same directory where exe file is located.
+It is inspired by the old "miniraw" utility written by Rocco Lapadula.<br/>
 Compared to the original version mine is:
 * Open source
 * Written in modern language

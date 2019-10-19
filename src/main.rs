@@ -1,9 +1,9 @@
 #![windows_subsystem = "windows"]
 
-use std::{cell::RefCell, error::Error, rc::Rc};
+use std::{error::Error, rc::Rc};
 
-use log::{info, LevelFilter};
-use tokio::runtime::Runtime;
+use async_std::task;
+use log::{error, info, LevelFilter};
 use winapi::{
     shared::minwindef::{HIWORD, LOWORD},
     um::winuser::*,
@@ -21,9 +21,7 @@ use crate::ui::{
 mod listener;
 mod ui;
 
-struct MainWindow {
-    runtime: RefCell<Runtime>,
-}
+struct MainWindow;
 
 impl MainWindow {
     pub fn new<T>(title: T) -> Result<WindowRef, WindowError>
@@ -36,9 +34,7 @@ impl MainWindow {
             ..Default::default()
         };
 
-        let main_window = Rc::new(MainWindow {
-            runtime: RefCell::new(Runtime::new().unwrap()),
-        });
+        let main_window = Rc::new(MainWindow);
 
         let win = WindowBuilder::window("miniraw", None)
             .geometry(geometry)
@@ -78,9 +74,14 @@ impl WindowMessageHandler for MainWindow {
                     env!("CARGO_PKG_VERSION")
                 );
 
-                self.runtime
-                    .borrow_mut()
-                    .spawn(listener::start_raw_listener());
+                task::spawn(async {
+                    match listener::start_raw_listener().await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            error!("{}", e);
+                        }
+                    }
+                });
 
                 MessageResult::Processed
             }

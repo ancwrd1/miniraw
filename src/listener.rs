@@ -1,76 +1,71 @@
-use std::{env, io, path::PathBuf, time};
+use std::{env, path::PathBuf, time};
 
-use futures::{
-    future::{IntoFuture, Loop},
-    stream::Stream,
-    Future,
-};
-use log::{info, warn};
-use tokio::{io::AsyncRead, net::TcpListener};
+use async_std::{fs, io, net::TcpListener, prelude::*};
+use log::{error, info, warn};
 
-pub fn start_raw_listener() -> impl Future<Item = (), Error = ()> {
-    let addr = "0.0.0.0:9100".parse().unwrap();
-    TcpListener::bind(&addr)
-        .into_future()
-        .and_then(|listener| {
-            info!("Started listener on port 9100");
-            listener.incoming().for_each(|stream| {
-                info!("Incoming connection from {}", stream.peer_addr().unwrap());
+async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
+    let timestamp = time::SystemTime::now()
+        .duration_since(time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
 
-                let (reader, _) = stream.split();
+    let mut suffix = 0;
 
-                let timestamp = time::SystemTime::now()
-                    .duration_since(time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs();
+    loop {
+        let filename = if suffix == 0 {
+            format!("{}.spl", timestamp)
+        } else {
+            format!("{}-{}.spl", timestamp, suffix)
+        };
 
-                // get file name atomically in a future loop
-                let target = futures::future::loop_fn(timestamp, |timestamp| {
-                    let filename = format!("{}.spl", timestamp);
-                    let filepath = env::current_exe()
-                        .ok()
-                        .and_then(|p| p.parent().map(|p| p.to_owned()))
-                        .unwrap_or_else(|| PathBuf::new())
-                        .join(&filename);
+        let filepath = env::current_exe()
+            .ok()
+            .and_then(|p| p.parent().map(|p| p.to_owned()))
+            .unwrap_or_else(|| PathBuf::new())
+            .join(&filename);
 
-                    let pathcopy = filepath.clone();
+        match fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&filepath)
+            .await
+        {
+            Ok(writer) => break Ok((writer, filepath)),
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {
+                suffix += 1;
+            }
+            Err(e) => {
+                error!("{}", e);
+                return Err(e);
+            }
+        }
+    }
+}
 
-                    tokio::fs::OpenOptions::new()
-                        .write(true)
-                        .create_new(true)
-                        .open(filepath)
-                        .and_then(|writer| Ok(Loop::Break((writer, pathcopy))))
-                        .or_else(move |e| {
-                            if e.kind() == io::ErrorKind::AlreadyExists {
-                                Ok(Loop::Continue(timestamp + 1))
-                            } else {
-                                Err(e)
-                            }
-                        })
-                });
+pub async fn start_raw_listener() -> io::Result<()> {
+    let listener = TcpListener::bind("0.0.0.0:9100").await?;
+    info!("Started listener on port 9100");
 
-                target
-                    .and_then(|(writer, filepath)| {
-                        tokio::io::copy(reader, writer).map(move |(bytes, _, _)| {
-                            if bytes > 0 {
-                                info!(
-                                    "Saved {} bytes into {}",
-                                    bytes,
-                                    filepath.file_name().unwrap().to_string_lossy()
-                                );
-                            } else {
-                                warn!("Ignored empty file");
-                                let _ = std::fs::remove_file(filepath);
-                            }
-                        })
-                    })
-                    .map_err(|e| {
-                        warn!("{}", e);
-                        e
-                    })
-            })
-        })
-        .map_err(|e| {
-            warn!("{}", e);
-        })
+    let mut incoming = listener.incoming();
+
+    while let Some(stream) = incoming.next().await {
+        if let Ok(mut stream) = stream {
+            info!("Incoming connection from {}", stream.peer_addr()?);
+
+            if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
+                let bytes = io::copy(&mut stream, &mut target).await?;
+                if bytes > 0 {
+                    info!(
+                        "Saved {} bytes into {}",
+                        bytes,
+                        filepath.file_name().unwrap().to_string_lossy()
+                    );
+                } else {
+                    warn!("Ignored empty file");
+                    let _ = fs::remove_file(filepath).await;
+                }
+            }
+        }
+    }
+    Ok(())
 }

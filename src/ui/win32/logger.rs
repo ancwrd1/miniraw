@@ -17,6 +17,13 @@ impl WindowLogger {
         let _ = log::set_boxed_logger(Box::new(WindowLogger(hwnd)));
         log::set_max_level(level);
     }
+
+    fn is_our_path(&self, path: &Option<&str>) -> bool {
+        match path {
+            Some(p) if p.starts_with("miniraw") => true,
+            _ => false,
+        }
+    }
 }
 
 impl log::Log for WindowLogger {
@@ -25,7 +32,7 @@ impl log::Log for WindowLogger {
     }
 
     fn log(&self, record: &Record) {
-        if self.enabled(record.metadata()) {
+        if self.enabled(record.metadata()) && self.is_our_path(&record.module_path()) {
             unsafe {
                 let text_len = SendMessageW(self.0, WM_GETTEXTLENGTH, 0, 0) as usize;
                 let mut buffer = vec![0u16; text_len + 2];
