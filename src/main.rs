@@ -2,7 +2,6 @@
 
 use std::{error::Error, rc::Rc};
 
-use async_std::task;
 use log::{error, info, LevelFilter};
 use winapi::{
     shared::minwindef::{HIWORD, LOWORD},
@@ -74,12 +73,9 @@ impl WindowMessageHandler for MainWindow {
                     env!("CARGO_PKG_VERSION")
                 );
 
-                task::spawn(async {
-                    match listener::start_raw_listener().await {
-                        Ok(_) => {}
-                        Err(e) => {
-                            error!("{}", e);
-                        }
+                tokio::spawn(async {
+                    if let Err(e) = listener::start_raw_listener().await {
+                        error!("{}", e);
                     }
                 });
 
@@ -105,7 +101,8 @@ impl WindowMessageHandler for MainWindow {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     let _ = MainWindow::new(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
     MessageLoop::new().run();
     Ok(())
