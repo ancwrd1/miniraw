@@ -10,7 +10,7 @@ opt-level = "z"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
-async-std = "1.0"
-time = "0.1"
+async-std = "1"
+time = "0.2"
 widestring = "0.4"
 winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }
