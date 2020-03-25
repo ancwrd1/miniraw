@@ -10,7 +10,8 @@ opt-level = "z"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
-tokio = "0.2"
+tokio = { version = "0.2", features = ["tcp", "fs", "rt-threaded", "macros", "stream"] }
+futures-util = "0.3"
 time = "0.2"
 widestring = "0.4"
 winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }

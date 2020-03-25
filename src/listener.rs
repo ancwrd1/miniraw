@@ -1,8 +1,8 @@
-use std::{env, io, path::PathBuf, time};
+use std::{env, io, net::Ipv4Addr, path::PathBuf, time};
 
-use futures::StreamExt;
+use futures_util::StreamExt;
 use log::{error, info, warn};
-use tokio::{fs, io::AsyncReadExt, net::TcpListener};
+use tokio::{fs, io::copy, net::TcpListener};
 
 async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     let timestamp = time::SystemTime::now()
@@ -44,7 +44,7 @@ async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
 }
 
 pub async fn start_raw_listener() -> io::Result<()> {
-    let listener = TcpListener::bind("0.0.0.0:9100").await?;
+    let mut listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100)).await?;
     info!("Started listener on port 9100");
 
     let mut incoming = listener.incoming();
@@ -54,7 +54,7 @@ pub async fn start_raw_listener() -> io::Result<()> {
             info!("Incoming connection from {}", stream.peer_addr()?);
 
             if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
-                let bytes = stream.copy(&mut target).await?;
+                let bytes = copy(&mut stream, &mut target).await?;
                 if bytes > 0 {
                     info!(
                         "Saved {} bytes into {}",
