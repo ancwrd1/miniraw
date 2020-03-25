@@ -49,19 +49,19 @@ impl log::Log for WindowLogger {
                         .unwrap()
                         .to_string_lossy();
 
-                    let time = time::now();
+                    let time = time::OffsetDateTime::now_local();
 
                     let msg = format!(
                         "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\r\n",
                         old_text,
                         record.level(),
-                        time.tm_year + 1900,
-                        time.tm_mon + 1,
-                        time.tm_mday,
-                        time.tm_hour,
-                        time.tm_min,
-                        time.tm_sec,
-                        time.tm_nsec / 10000000,
+                        time.year(),
+                        time.month(),
+                        time.day(),
+                        time.hour(),
+                        time.minute(),
+                        time.second(),
+                        time.millisecond(),
                         record.args()
                     );
                     let msg = WideCString::from_str(&msg).unwrap();
