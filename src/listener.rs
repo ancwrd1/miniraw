@@ -22,7 +22,7 @@ async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
         let filepath = env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_owned()))
-            .unwrap_or_else(|| PathBuf::new())
+            .unwrap_or_else(PathBuf::new)
             .join(&filename);
 
         match fs::OpenOptions::new()
@@ -47,9 +47,7 @@ pub async fn start_raw_listener() -> io::Result<()> {
     let mut listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100)).await?;
     info!("Started listener on port 9100");
 
-    let mut incoming = listener.incoming();
-
-    while let Some(stream) = incoming.next().await {
+    while let Some(stream) = listener.next().await {
         if let Ok(mut stream) = stream {
             info!("Incoming connection from {}", stream.peer_addr()?);
 

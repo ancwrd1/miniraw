@@ -11,7 +11,7 @@ panic = "abort"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
-tokio = { version = "0.2", features = ["tcp", "fs", "rt-threaded", "macros", "stream"] }
+tokio = { version = "0.3", features = ["net", "fs", "rt-multi-thread", "io-util", "macros", "stream"] }
 futures-util = "0.3"
 time = "0.2"
 widestring = "0.4"

@@ -209,7 +209,7 @@ impl fmt::Debug for Window {
 }
 impl Window {
     pub fn children(&self) -> Vec<WindowRef> {
-        self.children.borrow().iter().map(|w| w.clone()).collect()
+        self.children.borrow().iter().cloned().collect()
     }
 
     pub fn send_message(&self, message: WindowMessage) -> MessageResult {

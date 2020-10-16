@@ -112,7 +112,7 @@ impl WinProxy {
                 .parent
                 .as_ref()
                 .map(|p| (*p.proxy).hwnd)
-                .unwrap_or_else(|| ptr::null_mut());
+                .unwrap_or_else(ptr::null_mut);
 
             let (x, y, width, height) = builder.geometry.unwrap_or(CW_USEDEFAULT);
 

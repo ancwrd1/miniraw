@@ -23,7 +23,7 @@ mod ui;
 struct MainWindow;
 
 impl MainWindow {
-    pub fn new<T>(title: T) -> Result<WindowRef, WindowError>
+    pub fn create<T>(title: T) -> Result<WindowRef, WindowError>
     where
         T: AsRef<str>,
     {
@@ -59,7 +59,7 @@ impl WindowMessageHandler for MainWindow {
 
                 let font = Font::new(14, "Consolas");
 
-                let edit = WindowBuilder::edit_control(message.window.clone())
+                let edit = WindowBuilder::edit_control(message.window)
                     .style(edit_style)
                     .extended_style(WS_EX_CLIENTEDGE)
                     .font(font)
@@ -103,7 +103,7 @@ impl WindowMessageHandler for MainWindow {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let _ = MainWindow::new(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
+    let _ = MainWindow::create(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
     MessageLoop::new().run();
     Ok(())
 }

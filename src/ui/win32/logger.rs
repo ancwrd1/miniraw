@@ -19,10 +19,7 @@ impl WindowLogger {
     }
 
     fn is_our_path(&self, path: &Option<&str>) -> bool {
-        match path {
-            Some(p) if p.starts_with("miniraw") => true,
-            _ => false,
-        }
+        path.iter().any(|p| p.starts_with("miniraw"))
     }
 }
 
