@@ -1,6 +1,5 @@
 use std::{env, io, net::Ipv4Addr, path::PathBuf, time};
 
-use futures_util::StreamExt;
 use log::{error, info, warn};
 use tokio::{fs, io::copy, net::TcpListener};
 
@@ -44,25 +43,23 @@ async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
 }
 
 pub async fn start_raw_listener() -> io::Result<()> {
-    let mut listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100)).await?;
+    let listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100)).await?;
     info!("Started listener on port 9100");
 
-    while let Some(stream) = listener.next().await {
-        if let Ok(mut stream) = stream {
-            info!("Incoming connection from {}", stream.peer_addr()?);
+    while let Ok((mut stream, _)) = listener.accept().await {
+        info!("Incoming connection from {}", stream.peer_addr()?);
 
-            if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
-                let bytes = copy(&mut stream, &mut target).await?;
-                if bytes > 0 {
-                    info!(
-                        "Saved {} bytes into {}",
-                        bytes,
-                        filepath.file_name().unwrap().to_string_lossy()
-                    );
-                } else {
-                    warn!("Ignored empty file");
-                    let _ = fs::remove_file(filepath).await;
-                }
+        if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
+            let bytes = copy(&mut stream, &mut target).await?;
+            if bytes > 0 {
+                info!(
+                    "Saved {} bytes into {}",
+                    bytes,
+                    filepath.file_name().unwrap().to_string_lossy()
+                );
+            } else {
+                warn!("Ignored empty file");
+                let _ = fs::remove_file(filepath).await;
             }
         }
     }

@@ -46,7 +46,8 @@ impl log::Log for WindowLogger {
                         .unwrap()
                         .to_string_lossy();
 
-                    let time = time::OffsetDateTime::now_local();
+                    let time = time::OffsetDateTime::try_now_local()
+                        .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
 
                     let msg = format!(
                         "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\r\n",
