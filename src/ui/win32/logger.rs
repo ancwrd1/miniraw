@@ -1,3 +1,4 @@
+use chrono::{Datelike, Timelike};
 use log::{LevelFilter, Metadata, Record};
 use widestring::{WideCStr, WideCString};
 use winapi::{
@@ -46,8 +47,7 @@ impl log::Log for WindowLogger {
                         .unwrap()
                         .to_string_lossy();
 
-                    let time = time::OffsetDateTime::try_now_local()
-                        .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
+                    let time = chrono::Local::now();
 
                     let msg = format!(
                         "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\r\n",
@@ -59,7 +59,7 @@ impl log::Log for WindowLogger {
                         time.hour(),
                         time.minute(),
                         time.second(),
-                        time.millisecond(),
+                        time.nanosecond() / 1000,
                         record.args()
                     );
                     let msg = WideCString::from_str(&msg).unwrap();

@@ -12,6 +12,6 @@ panic = "abort"
 [dependencies]
 log = { version = "0.4", features = ["std"] }
 tokio = { version = "1", features = ["net", "fs", "rt-multi-thread", "io-util", "macros"] }
-time = "0.2"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 widestring = "0.4"
 winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }
