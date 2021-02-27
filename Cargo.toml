@@ -1,6 +1,6 @@
 [package]
 name = "miniraw"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 edition = "2018"
 
@@ -15,3 +15,6 @@ tokio = { version = "1", features = ["net", "fs", "rt-multi-thread", "io-util", 
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 widestring = "0.4"
 winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }
+
+[build-dependencies]
+embed-resource = "1"

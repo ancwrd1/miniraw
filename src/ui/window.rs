@@ -89,6 +89,7 @@ pub struct WindowBuilder {
     pub(crate) parent: Option<WindowRef>,
     pub(crate) handler: Rc<dyn WindowMessageHandler>,
     pub(crate) font: Option<Font>,
+    pub(crate) icon: Option<u32>,
 }
 
 impl WindowBuilder {
@@ -105,6 +106,7 @@ impl WindowBuilder {
             parent,
             handler: Rc::new(DummyMessageHandler),
             font: None,
+            icon: None,
         }
     }
 
@@ -118,6 +120,7 @@ impl WindowBuilder {
             parent: Some(parent),
             handler: Rc::new(DummyMessageHandler),
             font: None,
+            icon: None,
         }
     }
 
@@ -151,6 +154,11 @@ impl WindowBuilder {
 
     pub fn font(mut self, font: Font) -> Self {
         self.font = Some(font);
+        self
+    }
+
+    pub fn icon(mut self, icon: u32) -> Self {
+        self.icon = Some(icon);
         self
     }
 

@@ -38,6 +38,7 @@ impl MainWindow {
         let win = WindowBuilder::window("miniraw", None)
             .geometry(geometry)
             .title(title.as_ref())
+            .icon(1000)
             .message_handler(main_window)
             .build()?;
 

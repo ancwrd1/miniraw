@@ -94,7 +94,14 @@ impl WinProxy {
                         lpszClassName: name.as_ptr(),
                         cbClsExtra: 0,
                         cbWndExtra: 0,
-                        hIcon: LoadIconW(ptr::null_mut(), IDI_APPLICATION),
+                        hIcon: if let Some(icon) = builder.icon {
+                            LoadIconW(
+                                GetModuleHandleW(ptr::null_mut()),
+                                MAKEINTRESOURCEW(icon as _),
+                            )
+                        } else {
+                            LoadIconW(ptr::null_mut(), IDI_APPLICATION)
+                        },
                         hCursor: LoadCursorW(ptr::null_mut(), IDC_ARROW),
                         hbrBackground: COLOR_WINDOW as HBRUSH,
                         lpszMenuName: ptr::null_mut(),
