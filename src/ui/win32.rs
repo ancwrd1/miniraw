@@ -5,7 +5,7 @@ use std::{
     fmt, mem, ptr,
 };
 
-use widestring::WideCString;
+use widestring::{U16String, WideCString};
 use winapi::{
     shared::{minwindef::*, windef::*},
     um::{errhandlingapi::GetLastError, libloaderapi::GetModuleHandleW, wingdi::*, winuser::*},
@@ -15,6 +15,7 @@ use crate::ui::window::{
     ControlKind, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
     WindowRef,
 };
+use winapi::um::winuser::{GetSystemMenu, MF_CHECKED};
 
 pub mod logger;
 
@@ -169,6 +170,18 @@ impl WinProxy {
 
                 ShowWindow(self.hwnd, SW_SHOW);
                 UpdateWindow(self.hwnd);
+
+                let sys_menu = GetSystemMenu(self.hwnd, FALSE);
+                for item in builder.sys_menu_items.iter() {
+                    let text_u16 = U16String::from_str(&item.text);
+                    let mut info = mem::zeroed::<MENUITEMINFOW>();
+                    info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
+                    info.fMask = MIIM_ID | MIIM_STRING;
+                    info.wID = item.id;
+                    info.dwTypeData = text_u16.as_ptr() as _;
+                    info.cch = item.text.len() as _;
+                    InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, TRUE, &info);
+                }
                 Ok(())
             }
         }
@@ -195,6 +208,16 @@ impl WinProxy {
 
     pub(crate) fn handle(&self) -> HandleType {
         self.hwnd
+    }
+
+    pub(crate) fn check_sys_menu_item(&self, item: u32, flag: bool) {
+        unsafe {
+            CheckMenuItem(
+                GetSystemMenu(self.hwnd, FALSE),
+                item,
+                if flag { MF_CHECKED } else { MF_UNCHECKED },
+            );
+        }
     }
 
     fn window_proc(&mut self, msg: u32, wparam: usize, lparam: isize) -> isize {

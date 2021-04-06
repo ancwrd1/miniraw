@@ -77,6 +77,11 @@ pub(crate) enum ControlKind {
     Edit,
 }
 
+pub(crate) struct MenuItem {
+    pub(crate) id: u32,
+    pub(crate) text: String,
+}
+
 struct DummyMessageHandler;
 impl WindowMessageHandler for DummyMessageHandler {}
 
@@ -90,6 +95,7 @@ pub struct WindowBuilder {
     pub(crate) handler: Rc<dyn WindowMessageHandler>,
     pub(crate) font: Option<Font>,
     pub(crate) icon: Option<u32>,
+    pub(crate) sys_menu_items: Vec<MenuItem>,
 }
 
 impl WindowBuilder {
@@ -107,6 +113,7 @@ impl WindowBuilder {
             handler: Rc::new(DummyMessageHandler),
             font: None,
             icon: None,
+            sys_menu_items: Vec::new(),
         }
     }
 
@@ -121,6 +128,7 @@ impl WindowBuilder {
             handler: Rc::new(DummyMessageHandler),
             font: None,
             icon: None,
+            sys_menu_items: Vec::new(),
         }
     }
 
@@ -159,6 +167,17 @@ impl WindowBuilder {
 
     pub fn icon(mut self, icon: u32) -> Self {
         self.icon = Some(icon);
+        self
+    }
+
+    pub fn sys_menu_item<T>(mut self, id: u32, text: T) -> Self
+    where
+        T: AsRef<str>,
+    {
+        self.sys_menu_items.push(MenuItem {
+            id,
+            text: text.as_ref().to_owned(),
+        });
         self
     }
 
@@ -236,6 +255,12 @@ impl Window {
 
     pub fn add_child(&self, child: WindowRef) {
         self.children.borrow_mut().push(child)
+    }
+
+    pub fn check_sys_menu_item(&self, item: u32, flag: bool) {
+        unsafe {
+            (*self.proxy).check_sys_menu_item(item, flag);
+        }
     }
 }
 

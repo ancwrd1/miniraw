@@ -59,7 +59,7 @@ impl log::Log for WindowLogger {
                         time.hour(),
                         time.minute(),
                         time.second(),
-                        time.nanosecond() / 1000,
+                        time.nanosecond() / 1_000_000,
                         record.args()
                     );
                     let msg = WideCString::from_str(&msg).unwrap();

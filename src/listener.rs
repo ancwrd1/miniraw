@@ -1,4 +1,13 @@
-use std::{env, io, net::Ipv4Addr, path::PathBuf, time};
+use std::{
+    env, io,
+    net::Ipv4Addr,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time,
+};
 
 use log::{error, info, warn};
 use tokio::{fs, io::copy, net::TcpListener};
@@ -42,14 +51,17 @@ async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     }
 }
 
-pub async fn start_raw_listener() -> io::Result<()> {
+pub async fn start_raw_listener(discard_flag: Arc<AtomicBool>) -> io::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100)).await?;
     info!("Started listener on port 9100");
 
     while let Ok((mut stream, _)) = listener.accept().await {
         info!("Incoming connection from {}", stream.peer_addr()?);
 
-        if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
+        if discard_flag.load(Ordering::SeqCst) {
+            let bytes = copy(&mut stream, &mut tokio::io::sink()).await?;
+            info!("Discarded {} bytes", bytes);
+        } else if let Ok((mut target, filepath)) = new_filename_from_timestamp().await {
             let bytes = copy(&mut stream, &mut target).await?;
             if bytes > 0 {
                 info!(

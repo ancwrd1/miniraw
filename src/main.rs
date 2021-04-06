@@ -1,6 +1,13 @@
 #![windows_subsystem = "windows"]
 
-use std::{error::Error, rc::Rc};
+use std::{
+    error::Error,
+    rc::Rc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use log::{error, info, LevelFilter};
 use winapi::{
@@ -20,7 +27,12 @@ use crate::ui::{
 mod listener;
 mod ui;
 
-struct MainWindow;
+const IDI_MAINICON: u32 = 1000;
+const IDM_DISCARD_FILES: u32 = 1001;
+
+struct MainWindow {
+    discard_flag: Arc<AtomicBool>,
+}
 
 impl MainWindow {
     pub fn create<T>(title: T) -> Result<WindowRef, WindowError>
@@ -33,12 +45,15 @@ impl MainWindow {
             ..Default::default()
         };
 
-        let main_window = Rc::new(MainWindow);
+        let main_window = Rc::new(MainWindow {
+            discard_flag: Arc::new(AtomicBool::new(false)),
+        });
 
         let win = WindowBuilder::window("miniraw", None)
             .geometry(geometry)
             .title(title.as_ref())
-            .icon(1000)
+            .icon(IDI_MAINICON)
+            .sys_menu_item(IDM_DISCARD_FILES, "Discard received files")
             .message_handler(main_window)
             .build()?;
 
@@ -49,6 +64,13 @@ impl MainWindow {
 impl WindowMessageHandler for MainWindow {
     fn handle_message(&self, message: WindowMessage) -> MessageResult {
         match message.msg {
+            WM_SYSCOMMAND if message.wparam == IDM_DISCARD_FILES as _ => {
+                let flag = !self.discard_flag.load(Ordering::SeqCst);
+                info!("Discard received files: {}", flag);
+                self.discard_flag.store(flag, Ordering::SeqCst);
+                message.window.check_sys_menu_item(IDM_DISCARD_FILES, flag);
+                MessageResult::Processed
+            }
             WM_CREATE => {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
@@ -74,8 +96,10 @@ impl WindowMessageHandler for MainWindow {
                     env!("CARGO_PKG_VERSION")
                 );
 
+                let flag = self.discard_flag.clone();
+
                 tokio::spawn(async {
-                    if let Err(e) = listener::start_raw_listener().await {
+                    if let Err(e) = listener::start_raw_listener(flag).await {
                         error!("{}", e);
                     }
                 });
