@@ -2,7 +2,7 @@
 name = "miniraw"
 version = "1.0.5"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
-edition = "2018"
+edition = "2021"
 
 [profile.release]
 lto = true
