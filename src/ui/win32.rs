@@ -217,11 +217,10 @@ impl WinProxy {
     }
 
     fn window_proc(&mut self, msg: u32, wparam: usize, lparam: isize) -> isize {
-        let message = WindowMessage::new(self.owner.as_ref().unwrap().clone(), msg, wparam, lparam);
+        let owner = self.owner.as_ref().unwrap().clone();
+        let message = WindowMessage::new(owner.clone(), msg, wparam, lparam);
 
-        let handler = self.owner.as_ref().unwrap().handler.clone();
-
-        match handler.handle_message(message) {
+        match owner.handler.handle_message(message) {
             MessageResult::Processed => 0,
             MessageResult::Ignored => unsafe {
                 DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0

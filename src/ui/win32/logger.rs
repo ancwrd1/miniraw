@@ -46,9 +46,7 @@ impl log::Log for WindowLogger {
                 );
 
                 if cur_len.0 >= 0 {
-                    let old_text = U16CStr::from_slice_truncate(&buffer)
-                        .unwrap()
-                        .to_string_lossy();
+                    let old_text = U16CStr::from_slice_unchecked(&buffer).to_string_lossy();
 
                     let time = chrono::Local::now();
 
@@ -65,7 +63,7 @@ impl log::Log for WindowLogger {
                         time.nanosecond() / 1_000_000,
                         record.args()
                     );
-                    let msg = U16CString::from_str(&msg).unwrap();
+                    let msg = U16CString::from_str_unchecked(&msg);
 
                     SendMessageW(
                         self.0,

@@ -15,7 +15,7 @@ use tokio::{fs, io::copy, net::TcpListener};
 async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     let timestamp = time::SystemTime::now()
         .duration_since(time::UNIX_EPOCH)
-        .unwrap()
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?
         .as_secs();
 
     let mut suffix = 0;
@@ -30,7 +30,7 @@ async fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
         let filepath = env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_owned()))
-            .unwrap_or_else(PathBuf::new)
+            .unwrap_or_default()
             .join(&filename);
 
         match fs::OpenOptions::new()
