@@ -13,8 +13,9 @@ panic = "abort"
 log = { version = "0.4", features = ["std"] }
 tokio = { version = "1", features = ["net", "fs", "rt-multi-thread", "io-util", "macros"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-widestring = "0.4"
-winapi = { version = "0.3", features = ["libloaderapi", "winuser", "errhandlingapi"] }
+widestring = "0.5"
+windows = { version = "0.24", features = [
+    "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Graphics_Gdi"] }
 
 [build-dependencies]
 embed-resource = "1"

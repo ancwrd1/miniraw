@@ -1,12 +1,9 @@
 use chrono::{Datelike, Timelike};
 use log::{LevelFilter, Metadata, Record};
-use widestring::{WideCStr, WideCString};
-use winapi::{
-    shared::{
-        minwindef::{LPARAM, WPARAM},
-        windef::HWND,
-    },
-    um::winuser::{SendMessageW, WM_GETTEXT, WM_GETTEXTLENGTH, WM_SETTEXT},
+use widestring::{U16CStr, U16CString};
+use windows::Win32::{
+    Foundation::{HWND, LPARAM, WPARAM},
+    UI::WindowsAndMessaging::{SendMessageW, WM_GETTEXT, WM_GETTEXTLENGTH, WM_SETTEXT},
 };
 
 pub struct WindowLogger(HWND);
@@ -32,18 +29,24 @@ impl log::Log for WindowLogger {
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) && self.is_our_path(&record.module_path()) {
             unsafe {
-                let text_len = SendMessageW(self.0, WM_GETTEXTLENGTH, 0, 0) as usize;
+                let text_len = SendMessageW(
+                    self.0,
+                    WM_GETTEXTLENGTH,
+                    WPARAM::default(),
+                    LPARAM::default(),
+                )
+                .0 as usize;
                 let mut buffer = vec![0u16; text_len + 2];
 
                 let cur_len = SendMessageW(
                     self.0,
                     WM_GETTEXT,
-                    buffer.len() as WPARAM,
-                    buffer.as_mut_ptr() as LPARAM,
+                    WPARAM(buffer.len() as _),
+                    LPARAM(buffer.as_mut_ptr() as _),
                 );
 
-                if cur_len >= 0 {
-                    let old_text = WideCStr::from_slice_with_nul(&buffer)
+                if cur_len.0 >= 0 {
+                    let old_text = U16CStr::from_slice_truncate(&buffer)
                         .unwrap()
                         .to_string_lossy();
 
@@ -62,9 +65,14 @@ impl log::Log for WindowLogger {
                         time.nanosecond() / 1_000_000,
                         record.args()
                     );
-                    let msg = WideCString::from_str(&msg).unwrap();
+                    let msg = U16CString::from_str(&msg).unwrap();
 
-                    SendMessageW(self.0, WM_SETTEXT, 0, msg.as_ptr() as LPARAM);
+                    SendMessageW(
+                        self.0,
+                        WM_SETTEXT,
+                        WPARAM::default(),
+                        LPARAM(msg.as_ptr() as _),
+                    );
                 }
             }
         }

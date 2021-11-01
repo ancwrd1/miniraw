@@ -10,10 +10,7 @@ use std::{
 };
 
 use log::{error, info, LevelFilter};
-use winapi::{
-    shared::minwindef::{HIWORD, LOWORD},
-    um::winuser::*,
-};
+use windows::Win32::UI::WindowsAndMessaging::*;
 
 use crate::ui::{
     win32::logger::WindowLogger,
@@ -75,16 +72,16 @@ impl WindowMessageHandler for MainWindow {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
                     | WS_VSCROLL
-                    | ES_LEFT
-                    | ES_MULTILINE
-                    | ES_AUTOVSCROLL
-                    | ES_READONLY;
+                    | WINDOW_STYLE(ES_LEFT as _)
+                    | WINDOW_STYLE(ES_MULTILINE as _)
+                    | WINDOW_STYLE(ES_AUTOVSCROLL as _)
+                    | WINDOW_STYLE(ES_READONLY as _);
 
                 let font = Font::new(14, "Consolas");
 
                 let edit = WindowBuilder::edit_control(message.window)
-                    .style(edit_style)
-                    .extended_style(WS_EX_CLIENTEDGE)
+                    .style(edit_style.0)
+                    .extended_style(WS_EX_CLIENTEDGE.0)
                     .font(font)
                     .build()
                     .unwrap();
@@ -110,8 +107,8 @@ impl WindowMessageHandler for MainWindow {
                 let gm = WindowGeometry {
                     x: Some(6),
                     y: Some(6),
-                    width: Some(LOWORD(message.lparam as u32) as i32 - 12),
-                    height: Some(HIWORD(message.lparam as u32) as i32 - 12),
+                    width: Some(((message.lparam as u32) & 0xffff) as i32 - 12),
+                    height: Some(((message.lparam as u32) >> 16) as i32 - 12),
                 };
                 message.window.children()[0].move_window(gm);
 
