@@ -86,7 +86,7 @@ impl WinProxy {
 
             let mut class_u16 = match builder.kind {
                 ControlKind::Window(ref class) => {
-                    let mut name = U16CString::from_str(class).unwrap();
+                    let mut name = U16CString::from_str_unchecked(class);
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
@@ -107,16 +107,16 @@ impl WinProxy {
                     RegisterClassW(&wnd_class);
                     name
                 }
-                ControlKind::Edit => U16CString::from_str("EDIT").unwrap(),
+                ControlKind::Edit => U16CString::from_str_unchecked("EDIT"),
             };
 
-            let mut title = U16CString::from_str(&builder.title).unwrap();
+            let mut title = U16CString::from_str_unchecked(&builder.title);
 
             let parent = builder
                 .parent
                 .as_ref()
                 .map(|p| (*p.proxy).hwnd)
-                .unwrap_or_else(|| HWND::default());
+                .unwrap_or_default();
 
             let (x, y, width, height) = builder.geometry.unwrap_or(CW_USEDEFAULT);
 
@@ -141,7 +141,7 @@ impl WinProxy {
                 Err(WindowError::CreateError(error.0 as i32))
             } else {
                 if let Some(ref font) = builder.font {
-                    let mut face = U16CString::from_str(&font.face).unwrap();
+                    let mut face = U16CString::from_str_unchecked(&font.face);
 
                     let hfont = CreateFontW(
                         font.height as i32,

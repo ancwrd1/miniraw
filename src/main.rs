@@ -72,10 +72,7 @@ impl WindowMessageHandler for MainWindow {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
                     | WS_VSCROLL
-                    | WINDOW_STYLE(ES_LEFT as _)
-                    | WINDOW_STYLE(ES_MULTILINE as _)
-                    | WINDOW_STYLE(ES_AUTOVSCROLL as _)
-                    | WINDOW_STYLE(ES_READONLY as _);
+                    | WINDOW_STYLE((ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as _);
 
                 let font = Font::new(14, "Consolas");
 
