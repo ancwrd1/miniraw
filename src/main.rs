@@ -92,8 +92,8 @@ impl WindowMessageHandler for MainWindow {
 
                 let flag = self.discard_flag.clone();
 
-                tokio::spawn(async {
-                    if let Err(e) = listener::start_raw_listener(flag).await {
+                std::thread::spawn(|| {
+                    if let Err(e) = listener::start_raw_listener(flag) {
                         error!("{}", e);
                     }
                 });
@@ -120,8 +120,7 @@ impl WindowMessageHandler for MainWindow {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let _ = MainWindow::create(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
     MessageLoop::new().run();
     Ok(())

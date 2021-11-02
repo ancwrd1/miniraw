@@ -1,6 +1,6 @@
 [package]
 name = "miniraw"
-version = "1.0.5"
+version = "1.0.6"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 edition = "2021"
 
@@ -11,8 +11,7 @@ panic = "abort"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
-tokio = { version = "1", features = ["net", "fs", "rt-multi-thread", "io-util", "macros"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
+time = { version = "0.3", default-features = false, features = ["std", "local-offset"] }
 widestring = "0.5"
 windows = { version = "0.24", features = [
     "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Graphics_Gdi"] }

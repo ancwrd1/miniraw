@@ -15,7 +15,10 @@ fn compile_resources() -> BuildResult<()> {
     let rc = template
         .replace("@APP_VERSION_WINDOWS@", &app_version_windows)
         .replace("@APP_VERSION@", VERSION)
-        .replace("@ROOT@", &env::var("CARGO_MANIFEST_DIR")?.replace("\\", "/"));
+        .replace(
+            "@ROOT@",
+            &env::var("CARGO_MANIFEST_DIR")?.replace("\\", "/"),
+        );
 
     let rc_path = Path::new(&env::var("OUT_DIR")?).join("miniraw.rc");
     fs::write(&rc_path, rc.as_bytes())?;

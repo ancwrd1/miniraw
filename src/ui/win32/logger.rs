@@ -1,5 +1,5 @@
-use chrono::{Datelike, Timelike};
 use log::{LevelFilter, Metadata, Record};
+use time::OffsetDateTime;
 use widestring::{U16CStr, U16CString};
 use windows::Win32::{
     Foundation::{HWND, LPARAM, WPARAM},
@@ -48,19 +48,21 @@ impl log::Log for WindowLogger {
                 if cur_len.0 >= 0 {
                     let old_text = U16CStr::from_slice_unchecked(&buffer).to_string_lossy();
 
-                    let time = chrono::Local::now();
+                    let time =
+                        OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
+                    let (hour, minute, second, nano) = time.to_hms_nano();
 
                     let msg = format!(
                         "{}[{}] {}-{:02}-{:02} {:02}:{:02}:{:02}.{:03} {}\r\n",
                         old_text,
                         record.level(),
                         time.year(),
-                        time.month(),
+                        time.month() as u8 + 1,
                         time.day(),
-                        time.hour(),
-                        time.minute(),
-                        time.second(),
-                        time.nanosecond() / 1_000_000,
+                        hour,
+                        minute,
+                        second,
+                        nano / 1_000_000,
                         record.args()
                     );
                     let msg = U16CString::from_str_unchecked(&msg);
