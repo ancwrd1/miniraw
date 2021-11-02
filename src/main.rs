@@ -1,7 +1,6 @@
 #![windows_subsystem = "windows"]
 
 use std::{
-    error::Error,
     rc::Rc,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -120,8 +119,7 @@ impl WindowMessageHandler for MainWindow {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let _ = MainWindow::create(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")))?;
+fn main() {
+    let _ = MainWindow::create(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")));
     MessageLoop::new().run();
-    Ok(())
 }
