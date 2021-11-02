@@ -80,6 +80,7 @@ pub(crate) enum ControlKind {
 pub(crate) struct MenuItem {
     pub(crate) id: u32,
     pub(crate) text: String,
+    pub(crate) checked: bool,
 }
 
 struct DummyMessageHandler;
@@ -170,13 +171,14 @@ impl WindowBuilder {
         self
     }
 
-    pub fn sys_menu_item<T>(mut self, id: u32, text: T) -> Self
+    pub fn sys_menu_item<T>(mut self, id: u32, text: T, checked: bool) -> Self
     where
         T: AsRef<str>,
     {
         self.sys_menu_items.push(MenuItem {
             id,
             text: text.as_ref().to_owned(),
+            checked,
         });
         self
     }

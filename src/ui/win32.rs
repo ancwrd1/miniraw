@@ -5,7 +5,7 @@ use std::{
     fmt, mem, ptr,
 };
 
-use widestring::{U16CString, U16String};
+use widestring::U16CString;
 use windows::Win32::{
     Foundation::*, Graphics::Gdi::*, System::LibraryLoader::GetModuleHandleW,
     UI::WindowsAndMessaging::*,
@@ -169,11 +169,16 @@ impl WinProxy {
 
                 let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
                 for item in builder.sys_menu_items.iter() {
-                    let mut text_u16 = U16String::from_str(&item.text);
+                    let mut text_u16 = U16CString::from_str_unchecked(&item.text);
                     let mut info = mem::zeroed::<MENUITEMINFOW>();
                     info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
-                    info.fMask = MIIM_ID | MIIM_STRING;
+                    info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
                     info.wID = item.id;
+                    info.fState = if item.checked {
+                        MFS_CHECKED
+                    } else {
+                        MFS_UNCHECKED
+                    };
                     info.dwTypeData = PWSTR(text_u16.as_mut_ptr());
                     info.cch = item.text.len() as _;
                     InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info);
