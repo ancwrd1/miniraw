@@ -46,7 +46,8 @@ impl log::Log for WindowLogger {
                 );
 
                 if cur_len.0 >= 0 {
-                    let old_text = U16CStr::from_slice_unchecked(&buffer).to_string_lossy();
+                    let old_text = U16CStr::from_slice_unchecked(&buffer[0..cur_len.0 as usize + 1])
+                        .to_string_lossy();
 
                     let time =
                         OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
