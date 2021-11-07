@@ -10,7 +10,6 @@ use std::{
 };
 
 use log::{error, info, LevelFilter};
-use widestring::U16CString;
 use windows::Win32::{
     Foundation::{ERROR_SUCCESS, PWSTR},
     System::Registry::{
@@ -79,17 +78,13 @@ impl MainWindow {
 
     fn load_discard_flag(&self) {
         unsafe {
-            let mut key_name = U16CString::from_str_unchecked(REG_KEY_NAME);
             let mut hkey = HKEY::default();
-            if RegOpenKeyW(HKEY_CURRENT_USER, PWSTR(key_name.as_mut_ptr()), &mut hkey).0
-                == ERROR_SUCCESS.0 as i32
-            {
+            if RegOpenKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey).0 == ERROR_SUCCESS.0 as i32 {
                 let mut data = 0u32;
                 let mut size = mem::size_of::<u32>() as u32;
-                let mut value_name = U16CString::from_str_unchecked(REG_VALUE_NAME);
                 if RegQueryValueExW(
                     hkey,
-                    PWSTR(value_name.as_mut_ptr()),
+                    REG_VALUE_NAME,
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &mut data as *mut u32 as _,
@@ -106,17 +101,14 @@ impl MainWindow {
 
     fn store_discard_flag(&self) {
         unsafe {
-            let mut key_name = U16CString::from_str_unchecked(REG_KEY_NAME);
             let mut hkey = HKEY::default();
-            if RegCreateKeyW(HKEY_CURRENT_USER, PWSTR(key_name.as_mut_ptr()), &mut hkey).0
-                == ERROR_SUCCESS.0 as i32
+            if RegCreateKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey).0 == ERROR_SUCCESS.0 as i32
             {
                 let mut data = self.discard_flag.load(Ordering::SeqCst) as u32;
-                let mut value_name = U16CString::from_str_unchecked(REG_VALUE_NAME);
                 RegSetKeyValueW(
                     hkey,
                     PWSTR::default(),
-                    PWSTR(value_name.as_mut_ptr()),
+                    REG_VALUE_NAME,
                     REG_DWORD.0,
                     &mut data as *mut u32 as _,
                     mem::size_of::<u32>() as u32,
