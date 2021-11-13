@@ -1,4 +1,7 @@
-use std::{cell::RefCell, fmt, sync::Arc};
+use std::{
+    fmt,
+    sync::{Arc, RwLock},
+};
 
 use crate::ui::win32::{HandleType, WinProxy};
 
@@ -103,7 +106,7 @@ pub struct WindowBuilder {
     pub(crate) style: u32,
     pub(crate) extended_style: u32,
     pub(crate) parent: Option<WindowRef>,
-    pub(crate) handler: Arc<dyn WindowMessageHandler>,
+    pub(crate) handler: Arc<dyn WindowMessageHandler + Send + Sync + 'static>,
     pub(crate) font: Option<Font>,
     pub(crate) icon: Option<u32>,
     pub(crate) sys_menu_items: Vec<MenuItem>,
@@ -166,7 +169,10 @@ impl WindowBuilder {
         self
     }
 
-    pub fn message_handler(mut self, handler: Arc<dyn WindowMessageHandler>) -> Self {
+    pub fn message_handler(
+        mut self,
+        handler: Arc<dyn WindowMessageHandler + Send + Sync + 'static>,
+    ) -> Self {
         self.handler = handler;
         self
     }
@@ -196,7 +202,7 @@ impl WindowBuilder {
     pub fn build(mut self) -> Result<WindowRef, WindowError> {
         let window = Arc::new(Window {
             proxy: WinProxy::new(),
-            children: RefCell::new(Vec::new()),
+            children: Default::default(),
             handler: self.handler.clone(),
         });
 
@@ -237,9 +243,12 @@ pub enum MessageResult {
 
 pub struct Window {
     pub(crate) proxy: *mut WinProxy,
-    pub(crate) children: RefCell<Vec<WindowRef>>,
-    pub(crate) handler: Arc<dyn WindowMessageHandler>,
+    pub(crate) children: RwLock<Vec<WindowRef>>,
+    pub(crate) handler: Arc<dyn WindowMessageHandler + Send + Sync + 'static>,
 }
+
+unsafe impl Send for Window {}
+unsafe impl Sync for Window {}
 
 impl fmt::Debug for Window {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -248,7 +257,7 @@ impl fmt::Debug for Window {
 }
 impl Window {
     pub fn children(&self) -> Vec<WindowRef> {
-        self.children.borrow().iter().cloned().collect()
+        self.children.read().unwrap().iter().cloned().collect()
     }
 
     pub fn send_message(&self, message: WindowMessage) -> MessageResult {
@@ -266,7 +275,7 @@ impl Window {
     }
 
     pub fn add_child(&self, child: WindowRef) {
-        self.children.borrow_mut().push(child)
+        self.children.write().unwrap().push(child)
     }
 
     pub fn check_sys_menu_item(&self, item: u32, flag: bool) {

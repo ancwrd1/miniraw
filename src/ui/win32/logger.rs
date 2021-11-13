@@ -4,8 +4,6 @@ use time::OffsetDateTime;
 use crate::ui::window::WindowRef;
 
 pub struct WindowLogger(WindowRef);
-unsafe impl Send for WindowLogger {}
-unsafe impl Sync for WindowLogger {}
 
 impl WindowLogger {
     pub fn init(win: WindowRef, level: LevelFilter) {
