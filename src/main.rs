@@ -28,8 +28,8 @@ use crate::ui::{
     MessageLoop,
 };
 
-mod listener;
-mod ui;
+pub mod listener;
+pub mod ui;
 
 const IDI_MAINICON: u32 = 1000;
 const IDM_DISCARD_FILES: u32 = 1001;
@@ -145,7 +145,7 @@ impl WindowMessageHandler for MainWindow {
                     .build()
                     .unwrap();
 
-                WindowLogger::init(edit.handle(), LevelFilter::Info);
+                WindowLogger::init(edit, LevelFilter::Info);
 
                 info!(
                     ">>> MiniRAW NG {} by Dmitry Pankratov",
@@ -189,5 +189,5 @@ impl WindowMessageHandler for MainWindow {
 
 fn main() {
     let _ = MainWindow::create(format!("MiniRAW NG {}", env!("CARGO_PKG_VERSION")));
-    MessageLoop::new().run();
+    MessageLoop::default().run();
 }

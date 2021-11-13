@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::ui::win32::{HandleType, WinProxy};
@@ -9,14 +7,26 @@ pub type WindowHandle = HandleType;
 
 #[derive(Debug)]
 pub enum WindowError {
-    CreateError(i32),
+    Win32Error(windows::runtime::Error),
+}
+
+impl WindowError {
+    pub fn from_win32() -> Self {
+        WindowError::Win32Error(windows::runtime::Error::from_win32())
+    }
 }
 
 impl fmt::Display for WindowError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            WindowError::CreateError(code) => write!(f, "Create window error: {}", code),
+            WindowError::Win32Error(error) => write!(f, "Windows API error: {}", error),
         }
+    }
+}
+
+impl From<windows::runtime::Error> for WindowError {
+    fn from(err: windows::runtime::Error) -> Self {
+        WindowError::Win32Error(err)
     }
 }
 
@@ -260,9 +270,15 @@ impl Window {
     }
 
     pub fn check_sys_menu_item(&self, item: u32, flag: bool) {
-        unsafe {
-            (*self.proxy).check_sys_menu_item(item, flag);
-        }
+        unsafe { (*self.proxy).check_sys_menu_item(item, flag) }
+    }
+
+    pub fn get_text(&self) -> Result<String, WindowError> {
+        unsafe { (*self.proxy).get_text() }
+    }
+
+    pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
+        unsafe { (*self.proxy).set_text(text) }
     }
 }
 
