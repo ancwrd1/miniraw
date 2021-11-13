@@ -2,7 +2,6 @@
 
 use std::{
     mem, ptr,
-    rc::Rc,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -59,7 +58,7 @@ impl MainWindow {
             ..Default::default()
         };
 
-        let main_window = Rc::new(MainWindow::new());
+        let main_window = Arc::new(MainWindow::new());
 
         let win = WindowBuilder::window("miniraw", None)
             .geometry(geometry)

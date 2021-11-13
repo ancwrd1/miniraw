@@ -1,8 +1,8 @@
-use std::{cell::RefCell, fmt, rc::Rc};
+use std::{cell::RefCell, fmt, sync::Arc};
 
 use crate::ui::win32::{HandleType, WinProxy};
 
-pub type WindowRef = Rc<Window>;
+pub type WindowRef = Arc<Window>;
 pub type WindowHandle = HandleType;
 
 #[derive(Debug)]
@@ -103,7 +103,7 @@ pub struct WindowBuilder {
     pub(crate) style: u32,
     pub(crate) extended_style: u32,
     pub(crate) parent: Option<WindowRef>,
-    pub(crate) handler: Rc<dyn WindowMessageHandler>,
+    pub(crate) handler: Arc<dyn WindowMessageHandler>,
     pub(crate) font: Option<Font>,
     pub(crate) icon: Option<u32>,
     pub(crate) sys_menu_items: Vec<MenuItem>,
@@ -121,7 +121,7 @@ impl WindowBuilder {
             style: 0,
             extended_style: 0,
             parent,
-            handler: Rc::new(DummyMessageHandler),
+            handler: Arc::new(DummyMessageHandler),
             font: None,
             icon: None,
             sys_menu_items: Vec::new(),
@@ -136,7 +136,7 @@ impl WindowBuilder {
             style: 0,
             extended_style: 0,
             parent: Some(parent),
-            handler: Rc::new(DummyMessageHandler),
+            handler: Arc::new(DummyMessageHandler),
             font: None,
             icon: None,
             sys_menu_items: Vec::new(),
@@ -166,7 +166,7 @@ impl WindowBuilder {
         self
     }
 
-    pub fn message_handler(mut self, handler: Rc<dyn WindowMessageHandler>) -> Self {
+    pub fn message_handler(mut self, handler: Arc<dyn WindowMessageHandler>) -> Self {
         self.handler = handler;
         self
     }
@@ -194,7 +194,7 @@ impl WindowBuilder {
     }
 
     pub fn build(mut self) -> Result<WindowRef, WindowError> {
-        let window = Rc::new(Window {
+        let window = Arc::new(Window {
             proxy: WinProxy::new(),
             children: RefCell::new(Vec::new()),
             handler: self.handler.clone(),
@@ -238,7 +238,7 @@ pub enum MessageResult {
 pub struct Window {
     pub(crate) proxy: *mut WinProxy,
     pub(crate) children: RefCell<Vec<WindowRef>>,
-    pub(crate) handler: Rc<dyn WindowMessageHandler>,
+    pub(crate) handler: Arc<dyn WindowMessageHandler>,
 }
 
 impl fmt::Debug for Window {

@@ -1,16 +1,14 @@
-use std::rc::Rc;
-
 use log::{LevelFilter, Metadata, Record};
 use time::OffsetDateTime;
 
-use crate::ui::window::Window;
+use crate::ui::window::WindowRef;
 
-pub struct WindowLogger(Rc<Window>);
+pub struct WindowLogger(WindowRef);
 unsafe impl Send for WindowLogger {}
 unsafe impl Sync for WindowLogger {}
 
 impl WindowLogger {
-    pub fn init(win: Rc<Window>, level: LevelFilter) {
+    pub fn init(win: WindowRef, level: LevelFilter) {
         let _ = log::set_boxed_logger(Box::new(WindowLogger(win)));
         log::set_max_level(level);
     }
