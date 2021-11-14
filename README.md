@@ -9,7 +9,7 @@ It is inspired by the old "miniraw" utility written by Rocco Lapadula. Compared 
 * Written in modern language
 * Doesn't suffer from occasional issues with premature socket shutdown
 
-This is a GUI utility currently working on Windows. Will support other frameworks later.
+This is a GUI utility currently working on Windows.
 Binary releases can be downloaded from Releases section.
 
 ## License

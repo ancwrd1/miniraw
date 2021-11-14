@@ -14,8 +14,6 @@ use crate::ui::window::{
     WindowRef,
 };
 
-pub mod logger;
-
 pub(crate) type HandleType = HWND;
 
 unsafe extern "system" fn window_proc(

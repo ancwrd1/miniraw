@@ -19,7 +19,6 @@ use windows::Win32::{
 };
 
 use crate::ui::{
-    win32::logger::WindowLogger,
     window::{
         Font, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
         WindowMessageHandler, WindowRef,
@@ -28,6 +27,7 @@ use crate::ui::{
 };
 
 pub mod listener;
+pub mod logger;
 pub mod ui;
 
 const IDI_MAINICON: u32 = 1000;
@@ -144,7 +144,7 @@ impl WindowMessageHandler for MainWindow {
                     .build()
                     .unwrap();
 
-                WindowLogger::init(edit, LevelFilter::Info);
+                logger::WindowLogger::init(edit, LevelFilter::Info);
 
                 info!(
                     ">>> MiniRAW NG {} by Dmitry Pankratov",
