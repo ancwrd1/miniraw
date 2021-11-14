@@ -3,6 +3,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+#[cfg(windows)]
 use crate::ui::win32::{HandleType, WinProxy};
 
 pub type WindowRef = Arc<Window>;
@@ -210,7 +211,7 @@ impl WindowBuilder {
             parent.add_child(window.clone());
         }
 
-        unsafe { (*window.proxy).create(&self, window.clone())? };
+        window.proxy().create(&self, window.clone())?;
 
         Ok(window)
     }
@@ -252,26 +253,31 @@ unsafe impl Sync for Window {}
 
 impl fmt::Debug for Window {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        unsafe { write!(f, "{:?}", *self.proxy) }
+        write!(f, "{:?}", self.proxy())
     }
 }
 impl Window {
+    fn proxy(&self) -> &mut WinProxy {
+        unsafe { &mut *self.proxy }
+    }
+
     pub fn children(&self) -> Vec<WindowRef> {
         self.children.read().unwrap().iter().cloned().collect()
     }
 
     pub fn send_message(&self, message: WindowMessage) -> MessageResult {
-        let result =
-            unsafe { (*self.proxy).send_message(message.msg, message.wparam, message.lparam) };
+        let result = self
+            .proxy()
+            .send_message(message.msg, message.wparam, message.lparam);
         MessageResult::Value(result)
     }
 
     pub fn move_window(&self, geometry: WindowGeometry) {
-        unsafe { (*self.proxy).move_window(geometry) }
+        self.proxy().move_window(geometry)
     }
 
     pub fn handle(&self) -> WindowHandle {
-        unsafe { (*self.proxy).handle() }
+        self.proxy().handle()
     }
 
     pub fn add_child(&self, child: WindowRef) {
@@ -279,23 +285,21 @@ impl Window {
     }
 
     pub fn check_sys_menu_item(&self, item: u32, flag: bool) {
-        unsafe { (*self.proxy).check_sys_menu_item(item, flag) }
+        self.proxy().check_sys_menu_item(item, flag)
     }
 
     pub fn get_text(&self) -> Result<String, WindowError> {
-        unsafe { (*self.proxy).get_text() }
+        self.proxy().get_text()
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
-        unsafe { (*self.proxy).set_text(text) }
+        self.proxy().set_text(text)
     }
 }
 
 impl Drop for Window {
     fn drop(&mut self) {
-        unsafe {
-            (*self.proxy).destroy();
-        };
+        self.proxy().destroy();
     }
 }
 
