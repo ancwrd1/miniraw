@@ -124,7 +124,7 @@ impl WinProxy {
             );
 
             if self.hwnd.0 == 0 {
-                let err = WindowError::Win32Error(windows::runtime::Error::from_win32());
+                let err = WindowError::Win32Error(windows::core::Error::from_win32());
                 self.destroy();
                 Err(err)
             } else {

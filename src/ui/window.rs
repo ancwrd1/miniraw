@@ -11,12 +11,12 @@ pub type WindowHandle = HandleType;
 
 #[derive(Debug)]
 pub enum WindowError {
-    Win32Error(windows::runtime::Error),
+    Win32Error(windows::core::Error),
 }
 
 impl WindowError {
     pub fn from_win32() -> Self {
-        WindowError::Win32Error(windows::runtime::Error::from_win32())
+        WindowError::Win32Error(windows::core::Error::from_win32())
     }
 }
 
@@ -28,8 +28,8 @@ impl fmt::Display for WindowError {
     }
 }
 
-impl From<windows::runtime::Error> for WindowError {
-    fn from(err: windows::runtime::Error) -> Self {
+impl From<windows::core::Error> for WindowError {
+    fn from(err: windows::core::Error) -> Self {
         WindowError::Win32Error(err)
     }
 }
