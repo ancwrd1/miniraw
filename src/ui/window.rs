@@ -257,6 +257,7 @@ impl fmt::Debug for Window {
     }
 }
 impl Window {
+    #[allow(clippy::mut_from_ref)]
     fn proxy(&self) -> &mut WinProxy {
         unsafe { &mut *self.proxy }
     }
