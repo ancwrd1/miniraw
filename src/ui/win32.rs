@@ -20,18 +20,18 @@ unsafe extern "system" fn window_proc(
     lparam: LPARAM,
 ) -> LRESULT {
     if msg == WM_CREATE {
-        let cs = lparam.0 as *const CREATESTRUCTW;
+        let cs = lparam as *const CREATESTRUCTW;
         let mut proxy = (*cs).lpCreateParams as *mut WinProxy;
 
         (*proxy).hwnd = hwnd;
 
         SetWindowLongPtrW(hwnd, GWL_USERDATA, proxy as isize);
-        LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
+        (*proxy).window_proc(msg, wparam, lparam)
     } else {
         let data = GetWindowLongPtrW(hwnd, GWL_USERDATA);
         if data != 0 {
             let proxy = data as *mut WinProxy;
-            LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
+            (*proxy).window_proc(msg, wparam, lparam)
         } else {
             DefWindowProcW(hwnd, msg, wparam, lparam)
         }
@@ -45,7 +45,7 @@ pub(crate) struct WinProxy {
 
 impl fmt::Debug for WinProxy {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "hwnd: {:08x}", self.hwnd.0 as u32)
+        write!(f, "hwnd: {:08x}", self.hwnd as u32)
     }
 }
 
@@ -67,7 +67,7 @@ impl WinProxy {
 
             let hinstance = GetModuleHandleW(PWSTR::default());
             let style = if builder.style == 0 {
-                WS_OVERLAPPEDWINDOW.0
+                WS_OVERLAPPEDWINDOW
             } else {
                 builder.style
             };
@@ -88,7 +88,7 @@ impl WinProxy {
                             LoadIconW(HINSTANCE::default(), IDI_APPLICATION)
                         },
                         hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW),
-                        hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
+                        hbrBackground: COLOR_WINDOW as _,
                         lpszMenuName: PWSTR::default(),
                     };
 
@@ -109,10 +109,10 @@ impl WinProxy {
             let (x, y, width, height) = builder.geometry.unwrap_or(CW_USEDEFAULT);
 
             self.hwnd = CreateWindowExW(
-                WINDOW_EX_STYLE(builder.extended_style),
+                builder.extended_style,
                 PWSTR(class_u16.as_mut_ptr()),
                 PWSTR(title.as_mut_ptr()),
-                WINDOW_STYLE(style),
+                style,
                 x,
                 y,
                 width,
@@ -123,7 +123,7 @@ impl WinProxy {
                 self as *mut WinProxy as _,
             );
 
-            if self.hwnd.0 == 0 {
+            if self.hwnd == 0 {
                 let err = WindowError::Win32Error(windows::core::Error::from_win32());
                 self.destroy();
                 Err(err)
@@ -144,11 +144,11 @@ impl WinProxy {
                         FONT_OUTPUT_PRECISION::default(),
                         FONT_CLIP_PRECISION::default(),
                         DEFAULT_QUALITY,
-                        FONT_PITCH_AND_FAMILY(DEFAULT_PITCH),
+                        DEFAULT_PITCH,
                         PWSTR(face.as_mut_ptr()),
                     );
-                    if hfont.0 != 0 {
-                        self.send_message(WM_SETFONT, hfont.0 as _, 1);
+                    if hfont != 0 {
+                        self.send_message(WM_SETFONT, hfont as _, 1);
                     }
                 }
 
@@ -178,7 +178,7 @@ impl WinProxy {
 
     pub(crate) fn destroy(&mut self) {
         unsafe {
-            if self.hwnd.0 != 0 {
+            if self.hwnd != 0 {
                 DestroyWindow(self.hwnd);
             }
             Box::from_raw(self);
@@ -192,7 +192,7 @@ impl WinProxy {
         }
     }
     pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> isize {
-        unsafe { SendMessageW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0 }
+        unsafe { SendMessageW(self.hwnd, msg, wparam, lparam) }
     }
 
     pub(crate) fn handle(&self) -> HandleType {
@@ -204,7 +204,7 @@ impl WinProxy {
             CheckMenuItem(
                 GetSystemMenu(self.hwnd, BOOL(0)),
                 item,
-                if flag { MF_CHECKED.0 } else { MF_UNCHECKED.0 },
+                if flag { MF_CHECKED } else { MF_UNCHECKED },
             );
         }
     }
@@ -249,7 +249,7 @@ impl WinProxy {
         match owner.handler.handle_message(message) {
             MessageResult::Processed => 0,
             MessageResult::Ignored => {
-                DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0
+                DefWindowProcW(self.hwnd, msg, wparam, lparam)
             }
             MessageResult::Value(value) => value,
         }

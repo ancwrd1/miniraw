@@ -78,7 +78,7 @@ impl MainWindow {
     fn load_discard_flag(&self) {
         unsafe {
             let mut hkey = HKEY::default();
-            if RegOpenKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey).0 == ERROR_SUCCESS.0 as i32 {
+            if RegOpenKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey) == ERROR_SUCCESS {
                 let mut data = 0u32;
                 let mut size = mem::size_of::<u32>() as u32;
                 if RegQueryValueExW(
@@ -88,8 +88,7 @@ impl MainWindow {
                     ptr::null_mut(),
                     &mut data as *mut u32 as _,
                     &mut size,
-                )
-                .0 == ERROR_SUCCESS.0 as i32
+                ) == ERROR_SUCCESS
                 {
                     self.discard_flag.store(data != 0, Ordering::SeqCst);
                 }
@@ -101,14 +100,13 @@ impl MainWindow {
     fn store_discard_flag(&self) {
         unsafe {
             let mut hkey = HKEY::default();
-            if RegCreateKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey).0 == ERROR_SUCCESS.0 as i32
-            {
+            if RegCreateKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey) == ERROR_SUCCESS {
                 let mut data = self.discard_flag.load(Ordering::SeqCst) as u32;
                 RegSetKeyValueW(
                     hkey,
                     PWSTR::default(),
                     REG_VALUE_NAME,
-                    REG_DWORD.0,
+                    REG_DWORD,
                     &mut data as *mut u32 as _,
                     mem::size_of::<u32>() as u32,
                 );
@@ -133,13 +131,13 @@ impl WindowMessageHandler for MainWindow {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
                     | WS_VSCROLL
-                    | WINDOW_STYLE((ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as _);
+                    | (ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as u32;
 
                 let font = Font::new(14, "Consolas");
 
                 let edit = WindowBuilder::edit_control(message.window)
-                    .style(edit_style.0)
-                    .extended_style(WS_EX_CLIENTEDGE.0)
+                    .style(edit_style)
+                    .extended_style(WS_EX_CLIENTEDGE)
                     .font(font)
                     .build()
                     .unwrap();
