@@ -20,18 +20,18 @@ unsafe extern "system" fn window_proc(
     lparam: LPARAM,
 ) -> LRESULT {
     if msg == WM_CREATE {
-        let cs = lparam as *const CREATESTRUCTW;
+        let cs = lparam.0 as *const CREATESTRUCTW;
         let mut proxy = (*cs).lpCreateParams as *mut WinProxy;
 
         (*proxy).hwnd = hwnd;
 
         SetWindowLongPtrW(hwnd, GWL_USERDATA, proxy as isize);
-        (*proxy).window_proc(msg, wparam, lparam)
+        LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
     } else {
         let data = GetWindowLongPtrW(hwnd, GWL_USERDATA);
         if data != 0 {
             let proxy = data as *mut WinProxy;
-            (*proxy).window_proc(msg, wparam, lparam)
+            LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
         } else {
             DefWindowProcW(hwnd, msg, wparam, lparam)
         }
@@ -45,7 +45,7 @@ pub(crate) struct WinProxy {
 
 impl fmt::Debug for WinProxy {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "hwnd: {:08x}", self.hwnd as u32)
+        write!(f, "hwnd: {:08x}", self.hwnd.0 as u32)
     }
 }
 
@@ -88,7 +88,7 @@ impl WinProxy {
                             LoadIconW(HINSTANCE::default(), IDI_APPLICATION)
                         },
                         hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW),
-                        hbrBackground: COLOR_WINDOW as _,
+                        hbrBackground: HBRUSH(COLOR_WINDOW as _),
                         lpszMenuName: PWSTR::default(),
                     };
 
@@ -123,7 +123,7 @@ impl WinProxy {
                 self as *mut WinProxy as _,
             );
 
-            if self.hwnd == 0 {
+            if self.hwnd.is_invalid() {
                 let err = WindowError::Win32Error(windows::core::Error::from_win32());
                 self.destroy();
                 Err(err)
@@ -147,8 +147,8 @@ impl WinProxy {
                         DEFAULT_PITCH,
                         PWSTR(face.as_mut_ptr()),
                     );
-                    if hfont != 0 {
-                        self.send_message(WM_SETFONT, hfont as _, 1);
+                    if !hfont.is_invalid() {
+                        self.send_message(WM_SETFONT, hfont.0 as _, 1);
                     }
                 }
 
@@ -178,7 +178,7 @@ impl WinProxy {
 
     pub(crate) fn destroy(&mut self) {
         unsafe {
-            if self.hwnd != 0 {
+            if !self.hwnd.is_invalid() {
                 DestroyWindow(self.hwnd);
             }
             Box::from_raw(self);
@@ -192,7 +192,7 @@ impl WinProxy {
         }
     }
     pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> isize {
-        unsafe { SendMessageW(self.hwnd, msg, wparam, lparam) }
+        unsafe { SendMessageW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0 }
     }
 
     pub(crate) fn handle(&self) -> HandleType {
@@ -249,7 +249,7 @@ impl WinProxy {
         match owner.handler.handle_message(message) {
             MessageResult::Processed => 0,
             MessageResult::Ignored => {
-                DefWindowProcW(self.hwnd, msg, wparam, lparam)
+                DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0
             }
             MessageResult::Value(value) => value,
         }
