@@ -110,8 +110,8 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 dependencies = [
  "windows_aarch64_msvc",
  "windows_i686_gnu",
@@ -122,28 +122,28 @@ dependencies = [
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 
 [[package]]
 name = "windows_i686_gnu"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 
 [[package]]
 name = "windows_i686_msvc"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 
 [[package]]
 name = "windows_x86_64_gnu"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 
 [[package]]
 name = "windows_x86_64_msvc"
-version = "0.29.0"
-source = "git+https://github.com/microsoft/windows-rs.git#4e84867b3faaa84db89951b0311bb9696ebe63ca"
+version = "0.30.0"
+source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
 
 [[package]]
 name = "winreg"
