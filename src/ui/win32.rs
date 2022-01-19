@@ -1,6 +1,5 @@
 use std::{fmt, mem};
 
-use widestring::{U16CStr, U16CString};
 use windows::Win32::{
     Foundation::*, Graphics::Gdi::*, System::LibraryLoader::GetModuleHandleW,
     UI::WindowsAndMessaging::*,
@@ -74,7 +73,7 @@ impl WinProxy {
 
             let mut class_u16 = match builder.kind {
                 ControlKind::Window(ref class) => {
-                    let mut name = U16CString::from_str_unchecked(class);
+                    let mut name = class.encode_utf16().chain([0]).collect::<Vec<_>>();
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
@@ -95,10 +94,10 @@ impl WinProxy {
                     RegisterClassW(&wnd_class);
                     name
                 }
-                ControlKind::Edit => U16CString::from_str_unchecked("EDIT"),
+                ControlKind::Edit => "EDIT\0".encode_utf16().collect::<Vec<_>>(),
             };
 
-            let mut title = U16CString::from_str_unchecked(&builder.title);
+            let mut title = builder.title.encode_utf16().chain([0]).collect::<Vec<_>>();
 
             let parent = builder
                 .parent
@@ -129,7 +128,7 @@ impl WinProxy {
                 Err(err)
             } else {
                 if let Some(ref font) = builder.font {
-                    let mut face = U16CString::from_str_unchecked(&font.face);
+                    let mut face = font.face.encode_utf16().chain([0]).collect::<Vec<_>>();
 
                     let hfont = CreateFontW(
                         font.height as i32,
@@ -157,7 +156,7 @@ impl WinProxy {
 
                 let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
                 for item in builder.sys_menu_items.iter() {
-                    let mut text_u16 = U16CString::from_str_unchecked(&item.text);
+                    let mut text_u16 = item.text.encode_utf16().chain([0]).collect::<Vec<_>>();
                     let mut info = mem::zeroed::<MENUITEMINFOW>();
                     info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
                     info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
@@ -210,35 +209,31 @@ impl WinProxy {
     }
 
     pub fn get_text(&self) -> Result<String, WindowError> {
-        unsafe {
-            let mut text_len = self.send_message(WM_GETTEXTLENGTH, 0, 0);
+        let mut text_len = self.send_message(WM_GETTEXTLENGTH, 0, 0);
 
-            if text_len < 0 {
-                return Err(WindowError::from_win32());
-            }
-
-            let mut buffer = vec![0u16; text_len as usize + 1];
-
-            text_len = self.send_message(WM_GETTEXT, buffer.len() as _, buffer.as_mut_ptr() as _);
-
-            if text_len < 0 {
-                return Err(WindowError::from_win32());
-            }
-
-            Ok(U16CStr::from_slice_unchecked(&buffer[0..text_len as usize + 1]).to_string_lossy())
+        if text_len < 0 {
+            return Err(WindowError::from_win32());
         }
+
+        let mut buffer = vec![0u16; text_len as usize + 1];
+
+        text_len = self.send_message(WM_GETTEXT, buffer.len() as _, buffer.as_mut_ptr() as _);
+
+        if text_len < 0 {
+            return Err(WindowError::from_win32());
+        }
+
+        String::from_utf16(&buffer[0..text_len as usize]).map_err(|_| WindowError::InvalidEncoding)
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
-        unsafe {
-            let msg = U16CString::from_str_unchecked(text);
-            let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _) != 0;
+        let msg = text.encode_utf16().chain([0]).collect::<Vec<_>>();
+        let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _) != 0;
 
-            if result {
-                Ok(())
-            } else {
-                Err(WindowError::from_win32())
-            }
+        if result {
+            Ok(())
+        } else {
+            Err(WindowError::from_win32())
         }
     }
 

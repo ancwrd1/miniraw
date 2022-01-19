@@ -47,7 +47,6 @@ dependencies = [
  "embed-resource",
  "log",
  "time",
- "widestring",
  "windows",
 ]
 
@@ -81,12 +80,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "widestring"
-version = "1.0.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6f1efe828a707edf85994a4501734ac1c1b9d244cfcf4de235f11c4125ace8f"
-
-[[package]]
 name = "winapi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -111,7 +104,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "windows"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 dependencies = [
  "windows_aarch64_msvc",
  "windows_i686_gnu",
@@ -123,27 +116,27 @@ dependencies = [
 [[package]]
 name = "windows_aarch64_msvc"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 
 [[package]]
 name = "windows_i686_gnu"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 
 [[package]]
 name = "windows_i686_msvc"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 
 [[package]]
 name = "windows_x86_64_gnu"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 
 [[package]]
 name = "windows_x86_64_msvc"
 version = "0.30.0"
-source = "git+https://github.com/microsoft/windows-rs.git#5e37e9fe2d6ce72069d11d5adf7fa106b172bfcb"
+source = "git+https://github.com/microsoft/windows-rs.git#1ea12c3c51729486b7f25d05d27a5fd059da9d0b"
 
 [[package]]
 name = "winreg"

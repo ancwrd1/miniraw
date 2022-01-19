@@ -12,6 +12,7 @@ pub type WindowHandle = HandleType;
 #[derive(Debug)]
 pub enum WindowError {
     Win32Error(windows::core::Error),
+    InvalidEncoding,
 }
 
 impl WindowError {
@@ -24,6 +25,7 @@ impl fmt::Display for WindowError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             WindowError::Win32Error(error) => write!(f, "Windows API error: {}", error),
+            WindowError::InvalidEncoding => write!(f, "Invalid text encoding (expected UTF-16)"),
         }
     }
 }

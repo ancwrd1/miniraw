@@ -8,11 +8,11 @@ edition = "2021"
 lto = true
 opt-level = "z"
 panic = "abort"
+codegen-units = 1
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
 time = { version = "0.3", default-features = false, features = ["std", "local-offset"] }
-widestring = "1.0.0-beta.1"
 windows = { git = "https://github.com/microsoft/windows-rs.git", features = [
     "alloc", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Graphics_Gdi",
     "Win32_System_Registry"] }
