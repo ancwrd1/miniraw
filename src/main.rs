@@ -106,7 +106,7 @@ impl MainWindow {
                     hkey,
                     PWSTR::default(),
                     REG_VALUE_NAME,
-                    REG_DWORD,
+                    REG_DWORD.0,
                     &mut data as *mut u32 as _,
                     mem::size_of::<u32>() as u32,
                 );
@@ -131,13 +131,13 @@ impl WindowMessageHandler for MainWindow {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
                     | WS_VSCROLL
-                    | (ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as u32;
+                    | WINDOW_STYLE((ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as u32);
 
                 let font = Font::new(14, "Consolas");
 
                 let edit = WindowBuilder::edit_control(message.window)
-                    .style(edit_style)
-                    .extended_style(WS_EX_CLIENTEDGE)
+                    .style(edit_style.0)
+                    .extended_style(WS_EX_CLIENTEDGE.0)
                     .font(font)
                     .build()
                     .unwrap();

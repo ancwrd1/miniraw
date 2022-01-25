@@ -66,7 +66,7 @@ impl WinProxy {
 
             let hinstance = GetModuleHandleW(PWSTR::default());
             let style = if builder.style == 0 {
-                WS_OVERLAPPEDWINDOW
+                WS_OVERLAPPEDWINDOW.0
             } else {
                 builder.style
             };
@@ -87,7 +87,7 @@ impl WinProxy {
                             LoadIconW(HINSTANCE::default(), IDI_APPLICATION)
                         },
                         hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW),
-                        hbrBackground: HBRUSH(COLOR_WINDOW as _),
+                        hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
                         lpszMenuName: PWSTR::default(),
                     };
 
@@ -108,10 +108,10 @@ impl WinProxy {
             let (x, y, width, height) = builder.geometry.unwrap_or(CW_USEDEFAULT);
 
             self.hwnd = CreateWindowExW(
-                builder.extended_style,
+                WINDOW_EX_STYLE(builder.extended_style),
                 PWSTR(class_u16.as_mut_ptr()),
                 PWSTR(title.as_mut_ptr()),
-                style,
+                WINDOW_STYLE(style),
                 x,
                 y,
                 width,
@@ -143,7 +143,7 @@ impl WinProxy {
                         FONT_OUTPUT_PRECISION::default(),
                         FONT_CLIP_PRECISION::default(),
                         DEFAULT_QUALITY,
-                        DEFAULT_PITCH,
+                        FONT_PITCH_AND_FAMILY(DEFAULT_PITCH),
                         PWSTR(face.as_mut_ptr()),
                     );
                     if !hfont.is_invalid() {
@@ -203,7 +203,7 @@ impl WinProxy {
             CheckMenuItem(
                 GetSystemMenu(self.hwnd, BOOL(0)),
                 item,
-                if flag { MF_CHECKED } else { MF_UNCHECKED },
+                if flag { MF_CHECKED.0 } else { MF_UNCHECKED.0 },
             );
         }
     }
