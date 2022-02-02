@@ -12,6 +12,10 @@ use crate::ui::window::{
 
 pub(crate) type HandleType = HWND;
 
+macro_rules! utf16 {
+    ($str: expr) => { $str.encode_utf16().chain([0]).collect::<Vec<_>>() }
+}
+
 unsafe extern "system" fn window_proc(
     hwnd: HWND,
     msg: u32,
@@ -73,7 +77,7 @@ impl WinProxy {
 
             let mut class_u16 = match builder.kind {
                 ControlKind::Window(ref class) => {
-                    let mut name = class.encode_utf16().chain([0]).collect::<Vec<_>>();
+                    let mut name = utf16!(class);
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
@@ -94,10 +98,10 @@ impl WinProxy {
                     RegisterClassW(&wnd_class);
                     name
                 }
-                ControlKind::Edit => "EDIT\0".encode_utf16().collect::<Vec<_>>(),
+                ControlKind::Edit => utf16!("EDIT"),
             };
 
-            let mut title = builder.title.encode_utf16().chain([0]).collect::<Vec<_>>();
+            let mut title = utf16!(builder.title);
 
             let parent = builder
                 .parent
@@ -128,7 +132,7 @@ impl WinProxy {
                 Err(err)
             } else {
                 if let Some(ref font) = builder.font {
-                    let mut face = font.face.encode_utf16().chain([0]).collect::<Vec<_>>();
+                    let mut face = utf16!(font.face);
 
                     let hfont = CreateFontW(
                         font.height as i32,
@@ -156,7 +160,7 @@ impl WinProxy {
 
                 let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
                 for item in builder.sys_menu_items.iter() {
-                    let mut text_u16 = item.text.encode_utf16().chain([0]).collect::<Vec<_>>();
+                    let mut text_u16 = utf16!(item.text);
                     let mut info = mem::zeroed::<MENUITEMINFOW>();
                     info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
                     info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
@@ -227,7 +231,7 @@ impl WinProxy {
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
-        let msg = text.encode_utf16().chain([0]).collect::<Vec<_>>();
+        let msg = utf16!(text);
         let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _) != 0;
 
         if result {
