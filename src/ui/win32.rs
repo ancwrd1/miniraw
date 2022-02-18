@@ -1,8 +1,11 @@
 use std::{fmt, mem};
 
-use windows::Win32::{
-    Foundation::*, Graphics::Gdi::*, System::LibraryLoader::GetModuleHandleW,
-    UI::WindowsAndMessaging::*,
+use windows::{
+    core::{PCWSTR, PWSTR},
+    Win32::{
+        Foundation::*, Graphics::Gdi::*, System::LibraryLoader::GetModuleHandleW,
+        UI::WindowsAndMessaging::*,
+    },
 };
 
 use crate::ui::window::{
@@ -13,7 +16,9 @@ use crate::ui::window::{
 pub(crate) type HandleType = HWND;
 
 macro_rules! utf16 {
-    ($str: expr) => { $str.encode_utf16().chain([0]).collect::<Vec<_>>() }
+    ($str: expr) => {
+        $str.encode_utf16().chain([0]).collect::<Vec<_>>()
+    };
 }
 
 unsafe extern "system" fn window_proc(
@@ -68,31 +73,34 @@ impl WinProxy {
         unsafe {
             self.owner = Some(owner);
 
-            let hinstance = GetModuleHandleW(PWSTR::default());
+            let hinstance = GetModuleHandleW(PCWSTR::default());
             let style = if builder.style == 0 {
                 WS_OVERLAPPEDWINDOW.0
             } else {
                 builder.style
             };
 
-            let mut class_u16 = match builder.kind {
+            let class_u16 = match builder.kind {
                 ControlKind::Window(ref class) => {
-                    let mut name = utf16!(class);
+                    let name = utf16!(class);
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
                         hInstance: hinstance,
-                        lpszClassName: PWSTR(name.as_mut_ptr()),
+                        lpszClassName: PCWSTR(name.as_ptr()),
                         cbClsExtra: 0,
                         cbWndExtra: 0,
                         hIcon: if let Some(icon) = builder.icon {
-                            LoadIconW(GetModuleHandleW(PWSTR::default()), PWSTR(icon as *mut u16))
+                            LoadIconW(
+                                GetModuleHandleW(PCWSTR::default()),
+                                PCWSTR(icon as *const u16),
+                            )
                         } else {
                             LoadIconW(HINSTANCE::default(), IDI_APPLICATION)
                         },
                         hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW),
                         hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
-                        lpszMenuName: PWSTR::default(),
+                        lpszMenuName: PCWSTR::default(),
                     };
 
                     RegisterClassW(&wnd_class);
@@ -101,7 +109,7 @@ impl WinProxy {
                 ControlKind::Edit => utf16!("EDIT"),
             };
 
-            let mut title = utf16!(builder.title);
+            let title = utf16!(builder.title);
 
             let parent = builder
                 .parent
@@ -113,8 +121,8 @@ impl WinProxy {
 
             self.hwnd = CreateWindowExW(
                 WINDOW_EX_STYLE(builder.extended_style),
-                PWSTR(class_u16.as_mut_ptr()),
-                PWSTR(title.as_mut_ptr()),
+                PCWSTR(class_u16.as_ptr()),
+                PCWSTR(title.as_ptr()),
                 WINDOW_STYLE(style),
                 x,
                 y,
@@ -132,7 +140,7 @@ impl WinProxy {
                 Err(err)
             } else {
                 if let Some(ref font) = builder.font {
-                    let mut face = utf16!(font.face);
+                    let face = utf16!(font.face);
 
                     let hfont = CreateFontW(
                         font.height as i32,
@@ -148,7 +156,7 @@ impl WinProxy {
                         FONT_CLIP_PRECISION::default(),
                         DEFAULT_QUALITY,
                         FONT_PITCH_AND_FAMILY(DEFAULT_PITCH),
-                        PWSTR(face.as_mut_ptr()),
+                        PCWSTR(face.as_ptr()),
                     );
                     if !hfont.is_invalid() {
                         self.send_message(WM_SETFONT, hfont.0 as _, 1);

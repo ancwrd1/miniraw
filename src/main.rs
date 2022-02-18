@@ -9,13 +9,16 @@ use std::{
 };
 
 use log::{error, info, LevelFilter};
-use windows::Win32::{
-    Foundation::{ERROR_SUCCESS, PWSTR},
-    System::Registry::{
-        RegCloseKey, RegCreateKeyW, RegOpenKeyW, RegQueryValueExW, RegSetKeyValueW, HKEY,
-        HKEY_CURRENT_USER, REG_DWORD,
+use windows::{
+    core::PCWSTR,
+    Win32::{
+        Foundation::ERROR_SUCCESS,
+        System::Registry::{
+            RegCloseKey, RegCreateKeyW, RegOpenKeyW, RegQueryValueExW, RegSetKeyValueW, HKEY,
+            HKEY_CURRENT_USER, REG_DWORD,
+        },
+        UI::WindowsAndMessaging::*,
     },
-    UI::WindowsAndMessaging::*,
 };
 
 use crate::ui::{
@@ -104,7 +107,7 @@ impl MainWindow {
                 let mut data = self.discard_flag.load(Ordering::SeqCst) as u32;
                 RegSetKeyValueW(
                     hkey,
-                    PWSTR::default(),
+                    PCWSTR::default(),
                     REG_VALUE_NAME,
                     REG_DWORD.0,
                     &mut data as *mut u32 as _,

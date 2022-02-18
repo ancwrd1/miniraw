@@ -13,7 +13,7 @@ codegen-units = 1
 [dependencies]
 log = { version = "0.4", features = ["std"] }
 time = { version = "0.3", default-features = false, features = ["std", "local-offset"] }
-windows = { version = "0.32", features = [
+windows = { git = "https://github.com/microsoft/windows-rs.git", features = [
     "alloc", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Graphics_Gdi",
     "Win32_System_Registry"] }
 
