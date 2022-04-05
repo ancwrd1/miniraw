@@ -1,6 +1,6 @@
 [package]
 name = "miniraw"
-version = "1.0.6"
+version = "1.0.7"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 edition = "2021"
 
@@ -9,13 +9,17 @@ lto = true
 opt-level = "z"
 panic = "abort"
 codegen-units = 1
+strip = "symbols"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
 time = { version = "0.3", default-features = false, features = ["std", "local-offset"] }
-windows = { git = "https://github.com/microsoft/windows-rs.git", features = [
-    "alloc", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Graphics_Gdi",
-    "Win32_System_Registry"] }
+
+[dependencies.windows]
+git = "https://github.com/microsoft/windows-rs.git"
+features = [
+    "alloc", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader",
+    "Win32_Graphics_Gdi", "Win32_System_Registry" ]
 
 [build-dependencies]
 embed-resource = "1"

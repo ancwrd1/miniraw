@@ -16,9 +16,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "embed-resource"
-version = "1.7.1"
+version = "1.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e813aabad49e547de6abcc81004dfced79226fb3a14d73c26aabc2816ee8c7f"
+checksum = "ecc24ff8d764818e9ab17963b0593c535f077a513f565e75e4352d758bc4d8c0"
 dependencies = [
  "cc",
  "rustc_version",
@@ -29,22 +29,22 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.119"
+version = "0.2.121"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bf2e165bb3457c8e098ea76f3e3bc9db55f87aa90d52d0e6be741470916aaa4"
+checksum = "efaa7b300f3b5fe8eb6bf21ce3895e1751d9665086af2d64b42f19701015ff4f"
 
 [[package]]
 name = "log"
-version = "0.4.14"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
+checksum = "6389c490849ff5bc16be905ae24bc913a9c8892e19b2341dbc175e14c341c2b8"
 dependencies = [
  "cfg-if",
 ]
 
 [[package]]
 name = "miniraw"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
  "embed-resource",
  "log",
@@ -54,9 +54,9 @@ dependencies = [
 
 [[package]]
 name = "num_threads"
-version = "0.1.3"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97ba99ba6393e2c3734791401b66902d981cb03bf190af674ca69949b6d5fb15"
+checksum = "aba1801fb138d8e85e11d0fc70baf4fe1cdfffda7c6cd34a854905df588e5ed0"
 dependencies = [
  "libc",
 ]
@@ -72,9 +72,9 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4a3381e03edd24287172047536f20cabde766e2cd3e65e6b00fb3af51c4f38d"
+checksum = "d65bd28f48be7196d222d95b9243287f48d27aca604e08497513019ff0502cc4"
 
 [[package]]
 name = "serde"
@@ -84,9 +84,9 @@ checksum = "ce31e24b01e1e524df96f1c2fdd054405f8d7376249a5110886fb4b658484789"
 
 [[package]]
 name = "time"
-version = "0.3.7"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "004cbc98f30fa233c61a38bc77e96a9106e65c88f2d3bef182ae952027e5753d"
+checksum = "c2702e08a7a860f005826c6815dcac101b19b5eb330c27fe4a5928fec1d20ddd"
 dependencies = [
  "libc",
  "num_threads",
@@ -145,8 +145,8 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 dependencies = [
  "windows_aarch64_msvc",
  "windows_i686_gnu",
@@ -157,28 +157,28 @@ dependencies = [
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 
 [[package]]
 name = "windows_i686_gnu"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 
 [[package]]
 name = "windows_i686_msvc"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 
 [[package]]
 name = "windows_x86_64_gnu"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 
 [[package]]
 name = "windows_x86_64_msvc"
-version = "0.33.0"
-source = "git+https://github.com/microsoft/windows-rs.git#bbaa1f5108eff77d1aeb3cd2cfde4cad374d0842"
+version = "0.35.0"
+source = "git+https://github.com/microsoft/windows-rs.git#d3c2f2ca9385a0f03162e33da40dcc350678161d"
 
 [[package]]
 name = "winreg"

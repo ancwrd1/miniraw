@@ -15,7 +15,7 @@ use crate::ui::window::{
 
 pub(crate) type HandleType = HWND;
 
-macro_rules! utf16 {
+macro_rules! utf16z {
     ($str: expr) => {
         $str.encode_utf16().chain([0]).collect::<Vec<_>>()
     };
@@ -82,7 +82,7 @@ impl WinProxy {
 
             let class_u16 = match builder.kind {
                 ControlKind::Window(ref class) => {
-                    let name = utf16!(class);
+                    let name = utf16z!(class);
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
@@ -94,11 +94,11 @@ impl WinProxy {
                             LoadIconW(
                                 GetModuleHandleW(PCWSTR::default()),
                                 PCWSTR(icon as *const u16),
-                            )
+                            )?
                         } else {
-                            LoadIconW(HINSTANCE::default(), IDI_APPLICATION)
+                            LoadIconW(HINSTANCE::default(), IDI_APPLICATION)?
                         },
-                        hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW),
+                        hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW)?,
                         hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
                         lpszMenuName: PCWSTR::default(),
                     };
@@ -106,10 +106,10 @@ impl WinProxy {
                     RegisterClassW(&wnd_class);
                     name
                 }
-                ControlKind::Edit => utf16!("EDIT"),
+                ControlKind::Edit => utf16z!("EDIT"),
             };
 
-            let title = utf16!(builder.title);
+            let title = utf16z!(builder.title);
 
             let parent = builder
                 .parent
@@ -134,13 +134,13 @@ impl WinProxy {
                 self as *mut WinProxy as _,
             );
 
-            if self.hwnd.is_invalid() {
+            if self.hwnd.0 == 0 {
                 let err = WindowError::Win32Error(windows::core::Error::from_win32());
                 self.destroy();
                 Err(err)
             } else {
                 if let Some(ref font) = builder.font {
-                    let face = utf16!(font.face);
+                    let face = utf16z!(font.face);
 
                     let hfont = CreateFontW(
                         font.height as i32,
@@ -168,7 +168,7 @@ impl WinProxy {
 
                 let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
                 for item in builder.sys_menu_items.iter() {
-                    let mut text_u16 = utf16!(item.text);
+                    let mut text_u16 = utf16z!(item.text);
                     let mut info = mem::zeroed::<MENUITEMINFOW>();
                     info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
                     info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
@@ -189,7 +189,7 @@ impl WinProxy {
 
     pub(crate) fn destroy(&mut self) {
         unsafe {
-            if !self.hwnd.is_invalid() {
+            if self.hwnd.0 != 0 {
                 DestroyWindow(self.hwnd);
             }
             Box::from_raw(self);
@@ -239,7 +239,7 @@ impl WinProxy {
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
-        let msg = utf16!(text);
+        let msg = utf16z!(text);
         let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _) != 0;
 
         if result {
