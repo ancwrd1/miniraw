@@ -17,7 +17,7 @@ fn compile_resources() -> BuildResult<()> {
         .replace("@APP_VERSION@", VERSION)
         .replace(
             "@ROOT@",
-            &env::var("CARGO_MANIFEST_DIR")?.replace("\\", "/"),
+            &env::var("CARGO_MANIFEST_DIR")?.replace('\\', "/"),
         );
 
     let rc_path = Path::new(&env::var("OUT_DIR")?).join("miniraw.rc");
