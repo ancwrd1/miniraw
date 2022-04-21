@@ -29,9 +29,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.123"
+version = "0.2.124"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb691a747a7ab48abc15c5b42066eaafde10dc427e3b6ee2a1cf43db04c763bd"
+checksum = "21a41fed9d98f27ab1c6d161da622a4fa35e8a54a8adc24bbf3ddd0ef70b0e50"
 
 [[package]]
 name = "log"
@@ -146,7 +146,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "windows"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 dependencies = [
  "windows_aarch64_msvc",
  "windows_i686_gnu",
@@ -158,27 +158,27 @@ dependencies = [
 [[package]]
 name = "windows_aarch64_msvc"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 
 [[package]]
 name = "windows_i686_gnu"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 
 [[package]]
 name = "windows_i686_msvc"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 
 [[package]]
 name = "windows_x86_64_gnu"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 
 [[package]]
 name = "windows_x86_64_msvc"
 version = "0.35.0"
-source = "git+https://github.com/microsoft/windows-rs.git#88b014c094b279f2c1d567164baba3a26a879835"
+source = "git+https://github.com/microsoft/windows-rs.git#1ae0b4d76c09b517447b6054fa70df8e9777b446"
 
 [[package]]
 name = "winreg"

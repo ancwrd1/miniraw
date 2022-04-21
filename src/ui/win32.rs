@@ -73,7 +73,7 @@ impl WinProxy {
         unsafe {
             self.owner = Some(owner);
 
-            let hinstance = GetModuleHandleW(PCWSTR::default());
+            let hinstance = GetModuleHandleW(PCWSTR::default())?;
             let style = if builder.style == 0 {
                 WS_OVERLAPPEDWINDOW.0
             } else {
@@ -92,7 +92,7 @@ impl WinProxy {
                         cbWndExtra: 0,
                         hIcon: if let Some(icon) = builder.icon {
                             LoadIconW(
-                                GetModuleHandleW(PCWSTR::default()),
+                                GetModuleHandleW(PCWSTR::default())?,
                                 PCWSTR(icon as *const u16),
                             )?
                         } else {
