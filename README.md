@@ -3,6 +3,8 @@
 This application will listen on port 9100 for incoming connections and save the data into files in the same directory where exe file is located.
 Received files can be discarded by toggling the "Discard received files" menu item in the windows system menu.
 
+The main purpose of this simple application is to try a low-level GUI programming in Rust.
+
 It is inspired by the old "miniraw" utility written by Rocco Lapadula. Compared to the original version mine is:
 
 * Open source
