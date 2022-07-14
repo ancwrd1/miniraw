@@ -8,18 +8,15 @@ use windows::{
     },
 };
 
-use crate::ui::window::{
-    ControlKind, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
-    WindowRef,
+use crate::{
+    ui::window::{
+        ControlKind, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
+        WindowRef,
+    },
+    utf16z,
 };
 
 pub(crate) type HandleType = HWND;
-
-macro_rules! utf16z {
-    ($str: expr) => {
-        $str.encode_utf16().chain([0]).collect::<Vec<_>>()
-    };
-}
 
 unsafe extern "system" fn window_proc(
     hwnd: HWND,
@@ -73,7 +70,7 @@ impl WinProxy {
         unsafe {
             self.owner = Some(owner);
 
-            let hinstance = GetModuleHandleW(PCWSTR::default())?;
+            let hinstance = GetModuleHandleW(PCWSTR::null())?;
             let style = if builder.style == 0 {
                 WS_OVERLAPPEDWINDOW.0
             } else {
@@ -92,7 +89,7 @@ impl WinProxy {
                         cbWndExtra: 0,
                         hIcon: if let Some(icon) = builder.icon {
                             LoadIconW(
-                                GetModuleHandleW(PCWSTR::default())?,
+                                GetModuleHandleW(PCWSTR::null())?,
                                 PCWSTR(icon as *const u16),
                             )?
                         } else {
@@ -100,7 +97,7 @@ impl WinProxy {
                         },
                         hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW)?,
                         hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
-                        lpszMenuName: PCWSTR::default(),
+                        lpszMenuName: PCWSTR::null(),
                     };
 
                     RegisterClassW(&wnd_class);

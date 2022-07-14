@@ -32,6 +32,7 @@ use crate::ui::{
 pub mod listener;
 pub mod logger;
 pub mod ui;
+pub mod util;
 
 const IDI_MAINICON: u32 = 1000;
 const IDM_DISCARD_FILES: u32 = 1001;
@@ -81,12 +82,15 @@ impl MainWindow {
     fn load_discard_flag(&self) {
         unsafe {
             let mut hkey = HKEY::default();
-            if RegOpenKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey) == ERROR_SUCCESS {
+            let key_name = utf16z!(REG_KEY_NAME);
+            let value_name = utf16z!(REG_VALUE_NAME);
+            if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey) == ERROR_SUCCESS
+            {
                 let mut data = 0u32;
                 let mut size = mem::size_of::<u32>() as u32;
                 if RegQueryValueExW(
                     hkey,
-                    REG_VALUE_NAME,
+                    PCWSTR(value_name.as_ptr()),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &mut data as *mut u32 as _,
@@ -103,12 +107,15 @@ impl MainWindow {
     fn store_discard_flag(&self) {
         unsafe {
             let mut hkey = HKEY::default();
-            if RegCreateKeyW(HKEY_CURRENT_USER, REG_KEY_NAME, &mut hkey) == ERROR_SUCCESS {
+            let key_name = utf16z!(REG_KEY_NAME);
+            let value_name = utf16z!(REG_VALUE_NAME);
+            let rc = RegCreateKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey);
+            if rc == ERROR_SUCCESS {
                 let mut data = self.discard_flag.load(Ordering::SeqCst) as u32;
                 RegSetKeyValueW(
                     hkey,
-                    PCWSTR::default(),
-                    REG_VALUE_NAME,
+                    PCWSTR::null(),
+                    PCWSTR(value_name.as_ptr()),
                     REG_DWORD.0,
                     &mut data as *mut u32 as _,
                     mem::size_of::<u32>() as u32,
