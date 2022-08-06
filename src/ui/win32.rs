@@ -268,9 +268,9 @@ impl MessageLoopProxy {
         unsafe {
             let mut message: MSG = mem::zeroed();
 
-            while GetMessageW(&mut message as *mut MSG, HWND::default(), 0, 0).0 > 0 {
-                TranslateMessage(&message as *const MSG);
-                DispatchMessageW(&message as *const MSG);
+            while GetMessageW(&mut message, HWND::default(), 0, 0).0 > 0 {
+                TranslateMessage(&message);
+                DispatchMessageW(&message);
             }
         }
     }
