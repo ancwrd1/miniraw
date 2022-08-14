@@ -1,11 +1,8 @@
 #![windows_subsystem = "windows"]
 
-use std::{
-    mem,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
 };
 
 use log::{error, info, LevelFilter};
@@ -86,18 +83,19 @@ impl MainWindow {
             let value_name = utf16z!(REG_VALUE_NAME);
             if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey) == ERROR_SUCCESS
             {
-                let mut data = 0u32;
-                let mut size = mem::size_of::<u32>() as u32;
+                let mut data = [0u8; 4];
+                let mut size = data.len() as u32;
                 if RegQueryValueExW(
                     hkey,
                     PCWSTR(value_name.as_ptr()),
                     &mut 0,
                     None,
-                    &mut data as *mut _ as _,
+                    data.as_mut_ptr(),
                     Some(&mut size),
                 ) == ERROR_SUCCESS
                 {
-                    self.discard_flag.store(data != 0, Ordering::SeqCst);
+                    self.discard_flag
+                        .store(u32::from_ne_bytes(data) != 0, Ordering::SeqCst);
                 }
                 RegCloseKey(hkey);
             }
