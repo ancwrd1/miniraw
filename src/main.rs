@@ -88,9 +88,9 @@ impl MainWindow {
                 if RegQueryValueExW(
                     hkey,
                     PCWSTR(value_name.as_ptr()),
-                    &mut 0,
                     None,
-                    data.as_mut_ptr(),
+                    None,
+                    Some(data.as_mut_ptr()),
                     Some(&mut size),
                 ) == ERROR_SUCCESS
                 {
@@ -109,13 +109,14 @@ impl MainWindow {
             let value_name = utf16z!(REG_VALUE_NAME);
             let rc = RegCreateKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey);
             if rc == ERROR_SUCCESS {
-                let mut data = (self.discard_flag.load(Ordering::SeqCst) as u32).to_ne_bytes();
+                let data = (self.discard_flag.load(Ordering::SeqCst) as u32).to_ne_bytes();
                 RegSetKeyValueW(
                     hkey,
                     PCWSTR::null(),
                     PCWSTR(value_name.as_ptr()),
                     REG_DWORD.0,
-                    Some(data.as_mut()),
+                    Some(data.as_ptr() as _),
+                    data.len() as _,
                 );
                 RegCloseKey(hkey);
             }

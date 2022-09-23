@@ -128,7 +128,7 @@ impl WinProxy {
                 parent,
                 HMENU::default(),
                 hinstance,
-                self as *mut WinProxy as _,
+                Some(self as *mut WinProxy as _),
             );
 
             if self.hwnd.0 == 0 {
@@ -144,15 +144,15 @@ impl WinProxy {
                         0,
                         0,
                         0,
-                        if font.bold { FW_BOLD } else { FW_NORMAL } as _,
+                        if font.bold { FW_BOLD.0 } else { FW_NORMAL.0 } as _,
                         if font.italics { 1 } else { 0 },
                         0,
                         0,
-                        DEFAULT_CHARSET,
-                        FONT_OUTPUT_PRECISION::default(),
-                        FONT_CLIP_PRECISION::default(),
-                        DEFAULT_QUALITY,
-                        FONT_PITCH_AND_FAMILY(DEFAULT_PITCH),
+                        DEFAULT_CHARSET.0 as _,
+                        FONT_OUTPUT_PRECISION::default().0 as _,
+                        FONT_CLIP_PRECISION::default().0 as _,
+                        DEFAULT_QUALITY.0 as _,
+                        DEFAULT_PITCH.0 as _,
                         PCWSTR(face.as_ptr()),
                     );
                     if !hfont.is_invalid() {
@@ -189,7 +189,7 @@ impl WinProxy {
             if self.hwnd.0 != 0 {
                 DestroyWindow(self.hwnd);
             }
-            Box::from_raw(self);
+            let _ = Box::from_raw(self);
         }
     }
 
