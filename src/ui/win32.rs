@@ -145,7 +145,7 @@ impl WinProxy {
                         0,
                         0,
                         if font.bold { FW_BOLD.0 } else { FW_NORMAL.0 } as _,
-                        if font.italics { 1 } else { 0 },
+                        font.italics as u32,
                         0,
                         0,
                         DEFAULT_CHARSET.0 as _,

@@ -30,7 +30,7 @@ fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_owned()))
             .unwrap_or_default()
-            .join(&filename);
+            .join(filename);
 
         match fs::OpenOptions::new()
             .write(true)

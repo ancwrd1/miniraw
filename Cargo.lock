@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "cc"
-version = "1.0.73"
+version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fff2a6927b3bb87f9595d67196a70493f627687a71d87a0d692242c33f58c11"
+checksum = "a20104e2335ce8a659d6dd92a51a767a0c062599c73b343fd152cb401e828c3d"
 
 [[package]]
 name = "cfg-if"
@@ -16,9 +16,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "embed-resource"
-version = "1.7.3"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "936c1354206a875581696369aef920e12396e93bbd251c43a7a3f3fa85023a7d"
+checksum = "e62abb876c07e4754fae5c14cafa77937841f01740637e17d78dc04352f32a5e"
 dependencies = [
  "cc",
  "rustc_version",
@@ -29,9 +29,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.133"
+version = "0.2.138"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
+checksum = "db6d7e329c562c5dfab7a46a2afabc8b987ab9a4834c9d1ca04dc54c1546cef8"
 
 [[package]]
 name = "log"
@@ -72,31 +72,39 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "1.0.14"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e25dfac463d778e353db5be2449d1cce89bd6fd23c9f1ea21310ce6e5a1b29c4"
+checksum = "58bc9567378fc7690d6b2addae4e60ac2eeea07becb2c64b9f218b53865cba2a"
 
 [[package]]
 name = "serde"
-version = "1.0.145"
+version = "1.0.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
+checksum = "97fed41fc1a24994d044e6db6935e69511a1153b52c15eb42493b26fa87feba0"
 
 [[package]]
 name = "time"
-version = "0.3.14"
+version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c3f9a28b618c3a6b9251b6908e9c99e04b9e5c02e6581ccbb67d59c34ef7f9b"
+checksum = "a561bf4617eebd33bca6434b988f39ed798e527f51a1e797d0ee4f61c0a38376"
 dependencies = [
  "libc",
  "num_threads",
+ "serde",
+ "time-core",
 ]
 
 [[package]]
-name = "toml"
-version = "0.5.8"
+name = "time-core"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31142970826733df8241ef35dc040ef98c679ab14d7c3e54d827099b3acecaa"
+checksum = "2e153e1f1acaef8acc537e68b44906d2db6436e2b35ac2c6b42640fff91f00fd"
+
+[[package]]
+name = "toml"
+version = "0.5.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1333c76748e868a4d9d1017b5ab53171dfd095f70c712fdb4653a406547f598f"
 dependencies = [
  "serde",
 ]
@@ -113,9 +121,9 @@ dependencies = [
 
 [[package]]
 name = "vswhom-sys"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22025f6d8eb903ebf920ea6933b70b1e495be37e2cb4099e62c80454aaf57c39"
+checksum = "d3b17ae1f6c8a2b28506cd96d412eebf83b4a0ff2cbefeeb952f2f9dfa44ba18"
 dependencies = [
  "cc",
  "libc",
@@ -145,8 +153,16 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.43.0"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
+dependencies = [
+ "windows-targets",
+]
+
+[[package]]
+name = "windows-targets"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 dependencies = [
  "windows_aarch64_gnullvm",
  "windows_aarch64_msvc",
@@ -159,38 +175,38 @@ dependencies = [
 
 [[package]]
 name = "windows_aarch64_gnullvm"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_i686_gnu"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_i686_msvc"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_x86_64_gnu"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_x86_64_gnullvm"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "windows_x86_64_msvc"
-version = "0.41.0"
-source = "git+https://github.com/microsoft/windows-rs.git#82feb3e740d203acdc18df9a9b8926d85bf4ccd8"
+version = "0.42.1"
+source = "git+https://github.com/microsoft/windows-rs.git#75a8260b65c81ae06444d16f9faab154bb517aae"
 
 [[package]]
 name = "winreg"
