@@ -21,9 +21,9 @@ fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
 
     loop {
         let filename = if suffix == 0 {
-            format!("{}.spl", timestamp)
+            format!("{timestamp}.spl")
         } else {
-            format!("{}-{}.spl", timestamp, suffix)
+            format!("{timestamp}-{suffix}.spl")
         };
 
         let filepath = env::current_exe()
