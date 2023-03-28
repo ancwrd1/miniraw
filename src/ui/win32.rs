@@ -93,9 +93,9 @@ impl WinProxy {
                                 PCWSTR(icon as *const u16),
                             )?
                         } else {
-                            LoadIconW(HINSTANCE::default(), IDI_APPLICATION)?
+                            LoadIconW(HMODULE::default(), IDI_APPLICATION)?
                         },
-                        hCursor: LoadCursorW(HINSTANCE::default(), IDC_ARROW)?,
+                        hCursor: LoadCursorW(HMODULE::default(), IDC_ARROW)?,
                         hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
                         lpszMenuName: PCWSTR::null(),
                     };
