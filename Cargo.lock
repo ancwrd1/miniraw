@@ -29,9 +29,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.140"
+version = "0.2.142"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99227334921fae1a979cf0bfdfcc6b3e5ce376ef57e16fb6fb3ea2ed6095f80c"
+checksum = "6a987beff54b60ffa6d51982e1aa1146bc42f19bd26be28b0586f252fccf5317"
 
 [[package]]
 name = "log"
@@ -78,9 +78,9 @@ checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
 
 [[package]]
 name = "serde"
-version = "1.0.159"
+version = "1.0.160"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c04e8343c3daeec41f58990b9d77068df31209f2af111e059e9fe9646693065"
+checksum = "bb2f3770c8bce3bcda7e149193a069a0f4365bda1fa5cd88e03bca26afc1216c"
 
 [[package]]
 name = "time"
@@ -153,16 +153,25 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
+dependencies = [
+ "windows-core",
+ "windows-targets",
+]
+
+[[package]]
+name = "windows-core"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 dependencies = [
  "windows-targets",
 ]
 
 [[package]]
 name = "windows-targets"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 dependencies = [
  "windows_aarch64_gnullvm",
  "windows_aarch64_msvc",
@@ -175,38 +184,38 @@ dependencies = [
 
 [[package]]
 name = "windows_aarch64_gnullvm"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_i686_gnu"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_i686_msvc"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_x86_64_gnu"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_x86_64_gnullvm"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "windows_x86_64_msvc"
-version = "0.47.0"
-source = "git+https://github.com/microsoft/windows-rs.git#e03d14e2d0898f85bc2573f13dcd46929f971a87"
+version = "0.48.0"
+source = "git+https://github.com/microsoft/windows-rs.git#2e7f99d9ca80bb8f1216db7964062daf42e80158"
 
 [[package]]
 name = "winreg"

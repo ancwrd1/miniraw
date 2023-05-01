@@ -177,7 +177,7 @@ impl WinProxy {
                     };
                     info.dwTypeData = PWSTR(text_u16.as_mut_ptr());
                     info.cch = item.text.len() as _;
-                    InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info);
+                    InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info)?;
                 }
                 Ok(())
             }
@@ -187,7 +187,7 @@ impl WinProxy {
     pub(crate) fn destroy(&mut self) {
         unsafe {
             if self.hwnd.0 != 0 {
-                DestroyWindow(self.hwnd);
+                let _ = DestroyWindow(self.hwnd);
             }
             let _ = Box::from_raw(self);
         }
@@ -196,7 +196,7 @@ impl WinProxy {
     pub(crate) fn move_window(&self, geometry: WindowGeometry) {
         unsafe {
             let (x, y, width, height) = geometry.unwrap_or(CW_USEDEFAULT);
-            MoveWindow(self.hwnd, x, y, width, height, BOOL(1));
+            let _ = MoveWindow(self.hwnd, x, y, width, height, BOOL(1));
         }
     }
     pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> isize {

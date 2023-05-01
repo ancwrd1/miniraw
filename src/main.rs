@@ -9,7 +9,6 @@ use log::{error, info, LevelFilter};
 use windows::{
     core::PCWSTR,
     Win32::{
-        Foundation::ERROR_SUCCESS,
         System::Registry::{
             RegCloseKey, RegCreateKeyW, RegOpenKeyW, RegQueryValueExW, RegSetKeyValueW, HKEY,
             HKEY_CURRENT_USER, REG_DWORD,
@@ -81,8 +80,7 @@ impl MainWindow {
             let mut hkey = HKEY::default();
             let key_name = utf16z!(REG_KEY_NAME);
             let value_name = utf16z!(REG_VALUE_NAME);
-            if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey) == ERROR_SUCCESS
-            {
+            if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey).is_ok() {
                 let mut data = [0u8; 4];
                 let mut size = data.len() as u32;
                 if RegQueryValueExW(
@@ -92,12 +90,13 @@ impl MainWindow {
                     None,
                     Some(data.as_mut_ptr()),
                     Some(&mut size),
-                ) == ERROR_SUCCESS
+                )
+                .is_ok()
                 {
                     self.discard_flag
                         .store(u32::from_ne_bytes(data) != 0, Ordering::SeqCst);
                 }
-                RegCloseKey(hkey);
+                let _ = RegCloseKey(hkey);
             }
         }
     }
@@ -108,9 +107,9 @@ impl MainWindow {
             let key_name = utf16z!(REG_KEY_NAME);
             let value_name = utf16z!(REG_VALUE_NAME);
             let rc = RegCreateKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey);
-            if rc == ERROR_SUCCESS {
+            if rc.is_ok() {
                 let data = (self.discard_flag.load(Ordering::SeqCst) as u32).to_ne_bytes();
-                RegSetKeyValueW(
+                let _ = RegSetKeyValueW(
                     hkey,
                     PCWSTR::null(),
                     PCWSTR(value_name.as_ptr()),
@@ -118,7 +117,7 @@ impl MainWindow {
                     Some(data.as_ptr() as _),
                     data.len() as _,
                 );
-                RegCloseKey(hkey);
+                let _ = RegCloseKey(hkey);
             }
         }
     }
