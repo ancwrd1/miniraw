@@ -26,7 +26,7 @@ unsafe extern "system" fn window_proc(
 ) -> LRESULT {
     if msg == WM_CREATE {
         let cs = lparam.0 as *const CREATESTRUCTW;
-        let mut proxy = (*cs).lpCreateParams as *mut WinProxy;
+        let proxy = (*cs).lpCreateParams as *mut WinProxy;
 
         (*proxy).hwnd = hwnd;
 
@@ -83,7 +83,7 @@ impl WinProxy {
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
-                        hInstance: hinstance,
+                        hInstance: hinstance.into(),
                         lpszClassName: PCWSTR(name.as_ptr()),
                         cbClsExtra: 0,
                         cbWndExtra: 0,
