@@ -160,8 +160,8 @@ impl WinProxy {
                     }
                 }
 
-                ShowWindow(self.hwnd, SW_SHOW);
-                UpdateWindow(self.hwnd);
+                let _ = ShowWindow(self.hwnd, SW_SHOW);
+                let _ = UpdateWindow(self.hwnd);
 
                 let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
                 for item in builder.sys_menu_items.iter() {
@@ -269,7 +269,7 @@ impl MessageLoopProxy {
             let mut message: MSG = mem::zeroed();
 
             while GetMessageW(&mut message, HWND::default(), 0, 0).0 > 0 {
-                TranslateMessage(&message);
+                let _ = TranslateMessage(&message);
                 DispatchMessageW(&message);
             }
         }
