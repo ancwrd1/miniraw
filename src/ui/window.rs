@@ -153,7 +153,7 @@ impl WindowBuilder {
     where
         T: AsRef<str>,
     {
-        self.title = title.as_ref().to_owned();
+        title.as_ref().clone_into(&mut self.title);
         self
     }
 

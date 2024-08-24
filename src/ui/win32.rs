@@ -129,64 +129,57 @@ impl WinProxy {
                 HMENU::default(),
                 hinstance,
                 Some(self as *mut WinProxy as _),
-            );
+            )?;
+            if let Some(ref font) = builder.font {
+                let face = utf16z!(font.face);
 
-            if self.hwnd.0 == 0 {
-                let err = WindowError::Win32Error(windows::core::Error::from_win32());
-                self.destroy();
-                Err(err)
-            } else {
-                if let Some(ref font) = builder.font {
-                    let face = utf16z!(font.face);
-
-                    let hfont = CreateFontW(
-                        font.height as i32,
-                        0,
-                        0,
-                        0,
-                        if font.bold { FW_BOLD.0 } else { FW_NORMAL.0 } as _,
-                        font.italics as u32,
-                        0,
-                        0,
-                        DEFAULT_CHARSET.0 as _,
-                        FONT_OUTPUT_PRECISION::default().0 as _,
-                        FONT_CLIP_PRECISION::default().0 as _,
-                        DEFAULT_QUALITY.0 as _,
-                        DEFAULT_PITCH.0 as _,
-                        PCWSTR(face.as_ptr()),
-                    );
-                    if !hfont.is_invalid() {
-                        self.send_message(WM_SETFONT, hfont.0 as _, 1);
-                    }
+                let hfont = CreateFontW(
+                    font.height as i32,
+                    0,
+                    0,
+                    0,
+                    if font.bold { FW_BOLD.0 } else { FW_NORMAL.0 } as _,
+                    font.italics as u32,
+                    0,
+                    0,
+                    DEFAULT_CHARSET.0 as _,
+                    FONT_OUTPUT_PRECISION::default().0 as _,
+                    FONT_CLIP_PRECISION::default().0 as _,
+                    DEFAULT_QUALITY.0 as _,
+                    DEFAULT_PITCH.0 as _,
+                    PCWSTR(face.as_ptr()),
+                );
+                if !hfont.is_invalid() {
+                    self.send_message(WM_SETFONT, hfont.0 as _, 1);
                 }
-
-                let _ = ShowWindow(self.hwnd, SW_SHOW);
-                let _ = UpdateWindow(self.hwnd);
-
-                let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
-                for item in builder.sys_menu_items.iter() {
-                    let mut text_u16 = utf16z!(item.text);
-                    let mut info = mem::zeroed::<MENUITEMINFOW>();
-                    info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
-                    info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
-                    info.wID = item.id;
-                    info.fState = if item.checked {
-                        MFS_CHECKED
-                    } else {
-                        MFS_UNCHECKED
-                    };
-                    info.dwTypeData = PWSTR(text_u16.as_mut_ptr());
-                    info.cch = item.text.len() as _;
-                    InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info)?;
-                }
-                Ok(())
             }
+
+            let _ = ShowWindow(self.hwnd, SW_SHOW);
+            let _ = UpdateWindow(self.hwnd);
+
+            let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
+            for item in builder.sys_menu_items.iter() {
+                let mut text_u16 = utf16z!(item.text);
+                let mut info = mem::zeroed::<MENUITEMINFOW>();
+                info.cbSize = mem::size_of::<MENUITEMINFOW>() as _;
+                info.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
+                info.wID = item.id;
+                info.fState = if item.checked {
+                    MFS_CHECKED
+                } else {
+                    MFS_UNCHECKED
+                };
+                info.dwTypeData = PWSTR(text_u16.as_mut_ptr());
+                info.cch = item.text.len() as _;
+                InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info)?;
+            }
+            Ok(())
         }
     }
 
     pub(crate) fn destroy(&mut self) {
         unsafe {
-            if self.hwnd.0 != 0 {
+            if !self.hwnd.is_invalid() {
                 let _ = DestroyWindow(self.hwnd);
             }
             let _ = Box::from_raw(self);
