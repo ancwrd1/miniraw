@@ -23,7 +23,7 @@ fn compile_resources() -> BuildResult<()> {
     let rc_path = Path::new(&env::var("OUT_DIR")?).join("miniraw.rc");
     fs::write(&rc_path, rc.as_bytes())?;
 
-    embed_resource::compile(rc_path, embed_resource::NONE);
+    let _ = embed_resource::compile(rc_path, embed_resource::NONE);
 
     Ok(())
 }

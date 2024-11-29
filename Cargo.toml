@@ -22,4 +22,4 @@ features = [
     "Win32_Graphics_Gdi", "Win32_System_Registry" ]
 
 [build-dependencies]
-embed-resource = "2"
+embed-resource = "3"
