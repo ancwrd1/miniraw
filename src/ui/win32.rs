@@ -70,7 +70,7 @@ impl WinProxy {
         unsafe {
             self.owner = Some(owner);
 
-            let hinstance = GetModuleHandleW(PCWSTR::null())?;
+            let hinstance = GetModuleHandleW(PCWSTR::null())?.into();
             let style = if builder.style == 0 {
                 WS_OVERLAPPEDWINDOW.0
             } else {
@@ -83,19 +83,19 @@ impl WinProxy {
                     let wnd_class = WNDCLASSW {
                         style: CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
                         lpfnWndProc: Some(window_proc),
-                        hInstance: hinstance.into(),
+                        hInstance: hinstance,
                         lpszClassName: PCWSTR(name.as_ptr()),
                         cbClsExtra: 0,
                         cbWndExtra: 0,
                         hIcon: if let Some(icon) = builder.icon {
                             LoadIconW(
-                                GetModuleHandleW(PCWSTR::null())?,
+                                Some(GetModuleHandleW(PCWSTR::null())?.into()),
                                 PCWSTR(icon as *const u16),
                             )?
                         } else {
-                            LoadIconW(HMODULE::default(), IDI_APPLICATION)?
+                            LoadIconW(None, IDI_APPLICATION)?
                         },
-                        hCursor: LoadCursorW(HMODULE::default(), IDC_ARROW)?,
+                        hCursor: LoadCursorW(None, IDC_ARROW)?,
                         hbrBackground: HBRUSH(COLOR_WINDOW.0 as _),
                         lpszMenuName: PCWSTR::null(),
                     };
@@ -125,9 +125,9 @@ impl WinProxy {
                 y,
                 width,
                 height,
-                parent,
-                HMENU::default(),
-                hinstance,
+                Some(parent),
+                None,
+                Some(hinstance),
                 Some(self as *mut WinProxy as _),
             )?;
             if let Some(ref font) = builder.font {
@@ -157,7 +157,7 @@ impl WinProxy {
             let _ = ShowWindow(self.hwnd, SW_SHOW);
             let _ = UpdateWindow(self.hwnd);
 
-            let sys_menu = GetSystemMenu(self.hwnd, BOOL(0));
+            let sys_menu = GetSystemMenu(self.hwnd, false);
             for item in builder.sys_menu_items.iter() {
                 let mut text_u16 = utf16z!(item.text);
                 let mut info = mem::zeroed::<MENUITEMINFOW>();
@@ -171,7 +171,7 @@ impl WinProxy {
                 };
                 info.dwTypeData = PWSTR(text_u16.as_mut_ptr());
                 info.cch = item.text.len() as _;
-                InsertMenuItemW(sys_menu, GetMenuItemCount(sys_menu) as _, BOOL(1), &info)?;
+                InsertMenuItemW(sys_menu, GetMenuItemCount(Some(sys_menu)) as _, true, &info)?;
             }
             Ok(())
         }
@@ -189,11 +189,11 @@ impl WinProxy {
     pub(crate) fn move_window(&self, geometry: WindowGeometry) {
         unsafe {
             let (x, y, width, height) = geometry.unwrap_or(CW_USEDEFAULT);
-            let _ = MoveWindow(self.hwnd, x, y, width, height, BOOL(1));
+            let _ = MoveWindow(self.hwnd, x, y, width, height, true);
         }
     }
-    pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> isize {
-        unsafe { SendMessageW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0 }
+    pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> LRESULT {
+        unsafe { SendMessageW(self.hwnd, msg, Some(WPARAM(wparam)), Some(LPARAM(lparam))) }
     }
 
     pub(crate) fn handle(&self) -> HandleType {
@@ -203,7 +203,7 @@ impl WinProxy {
     pub(crate) fn check_sys_menu_item(&self, item: u32, flag: bool) {
         unsafe {
             CheckMenuItem(
-                GetSystemMenu(self.hwnd, BOOL(0)),
+                GetSystemMenu(self.hwnd, false),
                 item,
                 if flag { MF_CHECKED.0 } else { MF_UNCHECKED.0 },
             );
@@ -211,26 +211,26 @@ impl WinProxy {
     }
 
     pub fn get_text(&self) -> Result<String, WindowError> {
-        let mut text_len = self.send_message(WM_GETTEXTLENGTH, 0, 0);
+        let mut lresult = self.send_message(WM_GETTEXTLENGTH, 0, 0);
 
-        if text_len < 0 {
+        if lresult.0 < 0 {
             return Err(WindowError::from_win32());
         }
 
-        let mut buffer = vec![0u16; text_len as usize + 1];
+        let mut buffer = vec![0u16; lresult.0 as usize + 1];
 
-        text_len = self.send_message(WM_GETTEXT, buffer.len() as _, buffer.as_mut_ptr() as _);
+        lresult = self.send_message(WM_GETTEXT, buffer.len() as _, buffer.as_mut_ptr() as _);
 
-        if text_len < 0 {
+        if lresult.0 < 0 {
             return Err(WindowError::from_win32());
         }
 
-        String::from_utf16(&buffer[0..text_len as usize]).map_err(|_| WindowError::InvalidEncoding)
+        String::from_utf16(&buffer[0..lresult.0 as usize]).map_err(|_| WindowError::InvalidEncoding)
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
         let msg = utf16z!(text);
-        let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _) != 0;
+        let result = self.send_message(WM_SETTEXT, 0, msg.as_ptr() as _).0 != 0;
 
         if result {
             Ok(())
@@ -261,7 +261,7 @@ impl MessageLoopProxy {
         unsafe {
             let mut message: MSG = mem::zeroed();
 
-            while GetMessageW(&mut message, HWND::default(), 0, 0).0 > 0 {
+            while GetMessageW(&mut message, None, 0, 0).0 > 0 {
                 let _ = TranslateMessage(&message);
                 DispatchMessageW(&message);
             }

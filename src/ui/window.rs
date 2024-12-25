@@ -272,7 +272,7 @@ impl Window {
         let result = self
             .proxy()
             .send_message(message.msg, message.wparam, message.lparam);
-        MessageResult::Value(result)
+        MessageResult::Value(result.0)
     }
 
     pub fn move_window(&self, geometry: WindowGeometry) {
