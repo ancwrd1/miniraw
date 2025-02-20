@@ -1,28 +1,28 @@
 #![windows_subsystem = "windows"]
 
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 
-use log::{error, info, LevelFilter};
+use log::{LevelFilter, error, info};
 use windows::{
-    core::PCWSTR,
     Win32::{
         System::Registry::{
-            RegCloseKey, RegCreateKeyW, RegOpenKeyW, RegQueryValueExW, RegSetKeyValueW, HKEY,
-            HKEY_CURRENT_USER, REG_DWORD,
+            HKEY, HKEY_CURRENT_USER, REG_DWORD, RegCloseKey, RegCreateKeyW, RegOpenKeyW,
+            RegQueryValueExW, RegSetKeyValueW,
         },
         UI::WindowsAndMessaging::*,
     },
+    core::PCWSTR,
 };
 
 use crate::ui::{
+    MessageLoop,
     window::{
         Font, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
         WindowMessageHandler, WindowRef,
     },
-    MessageLoop,
 };
 
 pub mod listener;

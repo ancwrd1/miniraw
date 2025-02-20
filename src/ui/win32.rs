@@ -1,11 +1,11 @@
 use std::{fmt, mem};
 
 use windows::{
-    core::{PCWSTR, PWSTR},
     Win32::{
         Foundation::*, Graphics::Gdi::*, System::LibraryLoader::GetModuleHandleW,
         UI::WindowsAndMessaging::*,
     },
+    core::{PCWSTR, PWSTR},
 };
 
 use crate::{
@@ -24,21 +24,23 @@ unsafe extern "system" fn window_proc(
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
-    if msg == WM_CREATE {
-        let cs = lparam.0 as *const CREATESTRUCTW;
-        let proxy = (*cs).lpCreateParams as *mut WinProxy;
+    unsafe {
+        if msg == WM_CREATE {
+            let cs = lparam.0 as *const CREATESTRUCTW;
+            let proxy = (*cs).lpCreateParams as *mut WinProxy;
 
-        (*proxy).hwnd = hwnd;
+            (*proxy).hwnd = hwnd;
 
-        SetWindowLongPtrW(hwnd, GWL_USERDATA, proxy as isize);
-        LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
-    } else {
-        let data = GetWindowLongPtrW(hwnd, GWL_USERDATA);
-        if data != 0 {
-            let proxy = data as *mut WinProxy;
+            SetWindowLongPtrW(hwnd, GWL_USERDATA, proxy as isize);
             LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
         } else {
-            DefWindowProcW(hwnd, msg, wparam, lparam)
+            let data = GetWindowLongPtrW(hwnd, GWL_USERDATA);
+            if data != 0 {
+                let proxy = data as *mut WinProxy;
+                LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
+            } else {
+                DefWindowProcW(hwnd, msg, wparam, lparam)
+            }
         }
     }
 }
@@ -240,15 +242,17 @@ impl WinProxy {
     }
 
     unsafe fn window_proc(&mut self, msg: u32, wparam: usize, lparam: isize) -> isize {
-        let owner = self.owner.as_ref().unwrap().clone();
-        let message = WindowMessage::new(owner.clone(), msg, wparam, lparam);
+        unsafe {
+            let owner = self.owner.as_ref().unwrap().clone();
+            let message = WindowMessage::new(owner.clone(), msg, wparam, lparam);
 
-        match owner.handler.handle_message(message) {
-            MessageResult::Processed => 0,
-            MessageResult::Ignored => {
-                DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0
+            match owner.handler.handle_message(message) {
+                MessageResult::Processed => 0,
+                MessageResult::Ignored => {
+                    DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0
+                }
+                MessageResult::Value(value) => value,
             }
-            MessageResult::Value(value) => value,
         }
     }
 }

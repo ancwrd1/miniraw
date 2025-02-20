@@ -3,8 +3,8 @@ use std::{
     net::{Ipv4Addr, TcpListener, TcpStream},
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc,
+        atomic::{AtomicBool, Ordering},
     },
     time,
 };
