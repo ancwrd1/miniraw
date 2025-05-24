@@ -14,7 +14,7 @@ use log::{error, info, warn};
 fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     let timestamp = time::SystemTime::now()
         .duration_since(time::UNIX_EPOCH)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?
+        .map_err(io::Error::other)?
         .as_secs();
 
     let mut suffix = 0;
