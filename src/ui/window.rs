@@ -17,7 +17,7 @@ pub enum WindowError {
 
 impl WindowError {
     pub fn from_win32() -> Self {
-        WindowError::Win32Error(windows::core::Error::from_win32())
+        WindowError::Win32Error(windows::core::Error::from_thread())
     }
 }
 
