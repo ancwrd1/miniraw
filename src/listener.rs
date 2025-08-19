@@ -2,14 +2,13 @@ use std::{
     env, fs, io,
     net::{Ipv4Addr, TcpListener, TcpStream},
     path::PathBuf,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-    },
+    sync::Arc,
     time,
 };
 
 use log::{error, info, warn};
+
+use crate::settings::AppSettings;
 
 fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     let timestamp = time::SystemTime::now()
@@ -49,10 +48,10 @@ fn new_filename_from_timestamp() -> io::Result<(fs::File, PathBuf)> {
     }
 }
 
-fn handle_request(mut stream: TcpStream, discard_flag: Arc<AtomicBool>) -> io::Result<()> {
+fn handle_request(mut stream: TcpStream, settings: Arc<AppSettings>) -> io::Result<()> {
     info!("Incoming connection from {}", stream.peer_addr()?);
 
-    if discard_flag.load(Ordering::SeqCst) {
+    if settings.discard_flag() {
         let bytes = io::copy(&mut stream, &mut io::sink())?;
         info!("Discarded {} bytes", bytes);
     } else if let Ok((mut target, filepath)) = new_filename_from_timestamp() {
@@ -71,15 +70,15 @@ fn handle_request(mut stream: TcpStream, discard_flag: Arc<AtomicBool>) -> io::R
     Ok(())
 }
 
-pub fn start_raw_listener(discard_flag: Arc<AtomicBool>) -> io::Result<()> {
+pub fn start_raw_listener(settings: Arc<AppSettings>) -> io::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::new(0, 0, 0, 0), 9100))?;
     info!("Started listener on port 9100");
 
     while let Ok((stream, _)) = listener.accept() {
-        let discard_flag = discard_flag.clone();
+        let settings = settings.clone();
 
         std::thread::spawn(move || {
-            let _ = handle_request(stream, discard_flag);
+            let _ = handle_request(stream, settings);
         });
     }
     Ok(())

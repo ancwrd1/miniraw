@@ -1,32 +1,24 @@
 #![windows_subsystem = "windows"]
 
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-};
+use std::sync::Arc;
 
 use log::{LevelFilter, error, info};
-use windows::{
-    Win32::{
-        System::Registry::{
-            HKEY, HKEY_CURRENT_USER, REG_DWORD, RegCloseKey, RegCreateKeyW, RegOpenKeyW,
-            RegQueryValueExW, RegSetKeyValueW,
-        },
-        UI::WindowsAndMessaging::*,
-    },
-    core::PCWSTR,
-};
+use windows::Win32::UI::WindowsAndMessaging::*;
 
-use crate::ui::{
-    MessageLoop,
-    window::{
-        Font, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
-        WindowMessageHandler, WindowRef,
+use crate::{
+    settings::AppSettings,
+    ui::{
+        MessageLoop,
+        window::{
+            Font, MessageResult, WindowBuilder, WindowError, WindowGeometry, WindowMessage,
+            WindowMessageHandler, WindowRef,
+        },
     },
 };
 
 pub mod listener;
 pub mod logger;
+pub mod settings;
 pub mod ui;
 pub mod util;
 
@@ -36,16 +28,14 @@ const REG_KEY_NAME: &str = "Software\\MiniRAW NG";
 const REG_VALUE_NAME: &str = "discard";
 
 struct MainWindow {
-    discard_flag: Arc<AtomicBool>,
+    settings: Arc<AppSettings>,
 }
 
 impl MainWindow {
     fn new() -> Self {
-        let window = MainWindow {
-            discard_flag: Arc::new(AtomicBool::new(false)),
-        };
-        window.load_discard_flag();
-        window
+        MainWindow {
+            settings: Arc::new(AppSettings::load()),
+        }
     }
 
     pub fn create<T>(title: T) -> Result<WindowRef, WindowError>
@@ -67,59 +57,12 @@ impl MainWindow {
             .sys_menu_item(
                 IDM_DISCARD_FILES,
                 "Discard received files",
-                main_window.discard_flag.load(Ordering::SeqCst),
+                main_window.settings.discard_flag(),
             )
             .message_handler(main_window)
             .build()?;
 
         Ok(win)
-    }
-
-    fn load_discard_flag(&self) {
-        unsafe {
-            let mut hkey = HKEY::default();
-            let key_name = utf16z!(REG_KEY_NAME);
-            let value_name = utf16z!(REG_VALUE_NAME);
-            if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey).is_ok() {
-                let mut data = [0u8; 4];
-                let mut size = data.len() as u32;
-                if RegQueryValueExW(
-                    hkey,
-                    PCWSTR(value_name.as_ptr()),
-                    None,
-                    None,
-                    Some(data.as_mut_ptr()),
-                    Some(&mut size),
-                )
-                .is_ok()
-                {
-                    self.discard_flag
-                        .store(u32::from_ne_bytes(data) != 0, Ordering::SeqCst);
-                }
-                let _ = RegCloseKey(hkey);
-            }
-        }
-    }
-
-    fn store_discard_flag(&self) {
-        unsafe {
-            let mut hkey = HKEY::default();
-            let key_name = utf16z!(REG_KEY_NAME);
-            let value_name = utf16z!(REG_VALUE_NAME);
-            let rc = RegCreateKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey);
-            if rc.is_ok() {
-                let data = (self.discard_flag.load(Ordering::SeqCst) as u32).to_ne_bytes();
-                let _ = RegSetKeyValueW(
-                    hkey,
-                    PCWSTR::null(),
-                    PCWSTR(value_name.as_ptr()),
-                    REG_DWORD.0,
-                    Some(data.as_ptr() as _),
-                    data.len() as _,
-                );
-                let _ = RegCloseKey(hkey);
-            }
-        }
     }
 }
 
@@ -127,11 +70,11 @@ impl WindowMessageHandler for MainWindow {
     fn handle_message(&self, message: WindowMessage) -> MessageResult {
         match message.msg {
             WM_SYSCOMMAND if message.wparam == IDM_DISCARD_FILES as _ => {
-                let flag = !self.discard_flag.load(Ordering::SeqCst);
+                let flag = !self.settings.discard_flag();
                 info!("Discard received files: {}", flag);
-                self.discard_flag.store(flag, Ordering::SeqCst);
+                self.settings.set_discard_flag(flag);
                 message.window.check_sys_menu_item(IDM_DISCARD_FILES, flag);
-                self.store_discard_flag();
+                self.settings.store();
                 MessageResult::Processed
             }
             WM_CREATE => {
@@ -156,15 +99,12 @@ impl WindowMessageHandler for MainWindow {
                     env!("CARGO_PKG_VERSION")
                 );
 
-                info!(
-                    "Discard received files: {}",
-                    self.discard_flag.load(Ordering::SeqCst)
-                );
+                info!("Discard received files: {}", self.settings.discard_flag());
 
-                let flag = self.discard_flag.clone();
+                let settings = self.settings.clone();
 
-                std::thread::spawn(|| {
-                    if let Err(e) = listener::start_raw_listener(flag) {
+                std::thread::spawn(move || {
+                    if let Err(e) = listener::start_raw_listener(settings) {
                         error!("{}", e);
                     }
                 });
