@@ -1,14 +1,19 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use windows::{
-    Win32::System::Registry::{
-        HKEY, HKEY_CURRENT_USER, REG_DWORD, RegCloseKey, RegCreateKeyW, RegOpenKeyW,
-        RegQueryValueExW, RegSetKeyValueW,
+    Win32::{
+        ERROR_SUCCESS, HKEY, HKEY_CURRENT_USER, LSTATUS, REG_DWORD, RegCloseKey, RegCreateKeyW,
+        RegOpenKeyW, RegQueryValueExW, RegSetKeyValueW,
     },
     core::PCWSTR,
 };
 
 use crate::{REG_KEY_NAME, REG_VALUE_NAME, utf16z};
+
+/// The registry functions return a raw `LSTATUS` rather than a `Result`.
+fn succeeded(rc: LSTATUS) -> bool {
+    rc.0 == ERROR_SUCCESS
+}
 
 pub struct AppSettings {
     discard_flag: AtomicBool,
@@ -22,19 +27,21 @@ impl AppSettings {
             let mut hkey = HKEY::default();
             let key_name = utf16z!(REG_KEY_NAME);
             let value_name = utf16z!(REG_VALUE_NAME);
-            if RegOpenKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey).is_ok() {
+            if succeeded(RegOpenKeyW(
+                HKEY_CURRENT_USER,
+                PCWSTR(key_name.as_ptr()),
+                &mut hkey,
+            )) {
                 let mut data = [0u8; 4];
                 let mut size = data.len() as u32;
-                if RegQueryValueExW(
+                if succeeded(RegQueryValueExW(
                     hkey,
                     PCWSTR(value_name.as_ptr()),
                     None,
                     None,
                     Some(data.as_mut_ptr()),
-                    Some(&mut size),
-                )
-                .is_ok()
-                {
+                    &mut size,
+                )) {
                     discard_flag = u32::from_ne_bytes(data) != 0;
                 }
                 let _ = RegCloseKey(hkey);
@@ -52,13 +59,13 @@ impl AppSettings {
             let key_name = utf16z!(REG_KEY_NAME);
             let value_name = utf16z!(REG_VALUE_NAME);
             let rc = RegCreateKeyW(HKEY_CURRENT_USER, PCWSTR(key_name.as_ptr()), &mut hkey);
-            if rc.is_ok() {
+            if succeeded(rc) {
                 let data = (self.discard_flag.load(Ordering::SeqCst) as u32).to_ne_bytes();
                 let _ = RegSetKeyValueW(
                     hkey,
                     PCWSTR::null(),
                     PCWSTR(value_name.as_ptr()),
-                    REG_DWORD.0,
+                    REG_DWORD,
                     Some(data.as_ptr() as _),
                     data.len() as _,
                 );

@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use log::{LevelFilter, error, info};
-use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::Win32::*;
 
 use crate::{
     settings::AppSettings,
@@ -68,7 +68,7 @@ impl MainWindow {
 
 impl WindowMessageHandler for MainWindow {
     fn handle_message(&self, message: WindowMessage) -> MessageResult {
-        match message.msg {
+        match message.msg as i32 {
             WM_SYSCOMMAND if message.wparam == IDM_DISCARD_FILES as _ => {
                 let flag = !self.settings.discard_flag();
                 info!("Discard received files: {}", flag);
@@ -81,13 +81,16 @@ impl WindowMessageHandler for MainWindow {
                 let edit_style = WS_CHILD
                     | WS_VISIBLE
                     | WS_VSCROLL
-                    | WINDOW_STYLE((ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY) as u32);
+                    | ES_LEFT
+                    | ES_MULTILINE
+                    | ES_AUTOVSCROLL
+                    | ES_READONLY;
 
                 let font = Font::new(14, "Consolas");
 
                 let edit = WindowBuilder::edit_control(message.window)
-                    .style(edit_style.0)
-                    .extended_style(WS_EX_CLIENTEDGE.0)
+                    .style(edit_style as u32)
+                    .extended_style(WS_EX_CLIENTEDGE as u32)
                     .font(font)
                     .build()
                     .unwrap();
