@@ -3,7 +3,10 @@
 use std::sync::Arc;
 
 use log::{LevelFilter, error, info};
-use windows::Win32::*;
+use windows::Win32::{
+    ES_AUTOVSCROLL, ES_LEFT, ES_MULTILINE, ES_READONLY, WM_CREATE, WM_DESTROY, WM_SIZE,
+    WM_SYSCOMMAND, WS_CHILD, WS_EX_CLIENTEDGE, WS_VISIBLE, WS_VSCROLL,
+};
 
 use crate::{
     settings::AppSettings,

@@ -1,7 +1,18 @@
 use std::{fmt, mem};
 
 use windows::{
-    Win32::*,
+    Win32::{
+        CLIP_DEFAULT_PRECIS, COLOR_WINDOW, CREATESTRUCTW, CS_HREDRAW, CS_OWNDC, CS_VREDRAW,
+        CW_USEDEFAULT, CheckMenuItem, CreateFontW, CreateWindowExW, DEFAULT_CHARSET, DEFAULT_PITCH,
+        DEFAULT_QUALITY, DefWindowProcW, DestroyWindow, DispatchMessageW, FW_BOLD, FW_NORMAL,
+        GWLP_USERDATA, GetMenuItemCount, GetMessageW, GetModuleHandleW, GetSystemMenu,
+        GetWindowLongPtrW, HBRUSH, HFONT, HICON, HINSTANCE, HWND, IDC_ARROW, IDI_APPLICATION,
+        InsertMenuItemW, LPARAM, LRESULT, LoadCursorW, LoadIconW, MENUITEMINFOW, MF_CHECKED,
+        MF_UNCHECKED, MFS_CHECKED, MFS_UNCHECKED, MIIM_ID, MIIM_STATE, MIIM_STRING, MSG,
+        MoveWindow, OUT_DEFAULT_PRECIS, PostQuitMessage, RegisterClassW, SW_SHOW, SendMessageW,
+        SetWindowLongPtrW, ShowWindow, TranslateMessage, UpdateWindow, WM_CREATE, WM_GETTEXT,
+        WM_GETTEXTLENGTH, WM_SETFONT, WM_SETTEXT, WNDCLASSW, WPARAM, WS_OVERLAPPEDWINDOW,
+    },
     core::{PCWSTR, PWSTR},
 };
 
