@@ -6,7 +6,7 @@ use windows::{
         CW_USEDEFAULT, CheckMenuItem, CreateFontW, CreateWindowExW, DEFAULT_CHARSET, DEFAULT_PITCH,
         DEFAULT_QUALITY, DefWindowProcW, DestroyWindow, DispatchMessageW, FW_BOLD, FW_NORMAL,
         GWLP_USERDATA, GetMenuItemCount, GetMessageW, GetModuleHandleW, GetSystemMenu,
-        GetWindowLongPtrW, HBRUSH, HFONT, HICON, HINSTANCE, HWND, IDC_ARROW, IDI_APPLICATION,
+        GetWindowLongPtrW, HFONT, HICON, HINSTANCE, HWND, IDC_ARROW, IDI_APPLICATION,
         InsertMenuItemW, LPARAM, LRESULT, LoadCursorW, LoadIconW, MENUITEMINFOW, MF_CHECKED,
         MF_UNCHECKED, MFS_CHECKED, MFS_UNCHECKED, MIIM_ID, MIIM_STATE, MIIM_STRING, MSG,
         MoveWindow, OUT_DEFAULT_PRECIS, PostQuitMessage, RegisterClassW, SW_SHOW, SendMessageW,
@@ -28,10 +28,10 @@ pub(crate) type HandleType = HWND;
 
 /// The Win32 bindings return raw handles, so null checks replace the previous `Result` returns.
 trait HandleExt: Sized {
-    fn is_null(&self) -> bool;
+    fn is_null_ptr(&self) -> bool;
 
     fn ok(self) -> Result<Self, WindowError> {
-        if self.is_null() {
+        if self.is_null_ptr() {
             Err(WindowError::from_win32())
         } else {
             Ok(self)
@@ -42,8 +42,8 @@ trait HandleExt: Sized {
 macro_rules! impl_handle_ext {
     ($($ty:ty),*) => {
         $(impl HandleExt for $ty {
-            fn is_null(&self) -> bool {
-                self.0.is_null()
+            fn is_null_ptr(&self) -> bool {
+                self.is_null()
             }
         })*
     };
@@ -60,18 +60,18 @@ unsafe extern "system" fn window_proc(
 ) -> LRESULT {
     unsafe {
         if msg == WM_CREATE as u32 {
-            let cs = lparam.0 as *const CREATESTRUCTW;
+            let cs = lparam as *const CREATESTRUCTW;
             let proxy = (*cs).lpCreateParams as *mut WinProxy;
 
             (*proxy).hwnd = hwnd;
 
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, proxy as isize);
-            LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
+            (*proxy).window_proc(msg, wparam, lparam)
         } else {
             let data = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
             if data != 0 {
                 let proxy = data as *mut WinProxy;
-                LRESULT((*proxy).window_proc(msg, wparam.0, lparam.0))
+                (*proxy).window_proc(msg, wparam, lparam)
             } else {
                 DefWindowProcW(hwnd, msg, wparam, lparam)
             }
@@ -86,7 +86,7 @@ pub(crate) struct WinProxy {
 
 impl fmt::Debug for WinProxy {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "hwnd: {:08x}", self.hwnd.0 as usize as u32)
+        write!(f, "hwnd: {:08x}", self.hwnd as usize as u32)
     }
 }
 
@@ -126,10 +126,10 @@ impl WinProxy {
                         hIcon: if let Some(icon) = builder.icon {
                             LoadIconW(Some(hinstance), PCWSTR(icon as *const u16)).ok()?
                         } else {
-                            LoadIconW(None, IDI_APPLICATION).ok()?
+                            LoadIconW(None, PCWSTR(IDI_APPLICATION.0 as *const u16)).ok()?
                         },
-                        hCursor: LoadCursorW(None, IDC_ARROW).ok()?,
-                        hbrBackground: HBRUSH(COLOR_WINDOW as isize as _),
+                        hCursor: LoadCursorW(None, PCWSTR(IDC_ARROW.0 as *const u16)).ok()?,
+                        hbrBackground: COLOR_WINDOW as isize as _,
                         lpszMenuName: PCWSTR::null(),
                     };
 
@@ -184,7 +184,7 @@ impl WinProxy {
                     PCWSTR(face.as_ptr()),
                 );
                 if !hfont.is_null() {
-                    self.send_message(WM_SETFONT as u32, hfont.0 as _, 1);
+                    self.send_message(WM_SETFONT as u32, hfont as _, 1);
                 }
             }
 
@@ -228,7 +228,7 @@ impl WinProxy {
         }
     }
     pub(crate) fn send_message(&self, msg: u32, wparam: usize, lparam: isize) -> LRESULT {
-        unsafe { SendMessageW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)) }
+        unsafe { SendMessageW(self.hwnd, msg, wparam, lparam) }
     }
 
     pub(crate) fn handle(&self) -> HandleType {
@@ -248,11 +248,11 @@ impl WinProxy {
     pub fn get_text(&self) -> Result<String, WindowError> {
         let mut lresult = self.send_message(WM_GETTEXTLENGTH as u32, 0, 0);
 
-        if lresult.0 < 0 {
+        if lresult < 0 {
             return Err(WindowError::from_win32());
         }
 
-        let mut buffer = vec![0u16; lresult.0 as usize + 1];
+        let mut buffer = vec![0u16; lresult as usize + 1];
 
         lresult = self.send_message(
             WM_GETTEXT as u32,
@@ -260,16 +260,16 @@ impl WinProxy {
             buffer.as_mut_ptr() as _,
         );
 
-        if lresult.0 < 0 {
+        if lresult < 0 {
             return Err(WindowError::from_win32());
         }
 
-        String::from_utf16(&buffer[0..lresult.0 as usize]).map_err(|_| WindowError::InvalidEncoding)
+        String::from_utf16(&buffer[0..lresult as usize]).map_err(|_| WindowError::InvalidEncoding)
     }
 
     pub fn set_text(&self, text: &str) -> Result<(), WindowError> {
         let msg = utf16z!(text);
-        let result = self.send_message(WM_SETTEXT as u32, 0, msg.as_ptr() as _).0 != 0;
+        let result = self.send_message(WM_SETTEXT as u32, 0, msg.as_ptr() as _) != 0;
 
         if result {
             Ok(())
@@ -285,9 +285,7 @@ impl WinProxy {
 
             match owner.handler.handle_message(message) {
                 MessageResult::Processed => 0,
-                MessageResult::Ignored => {
-                    DefWindowProcW(self.hwnd, msg, WPARAM(wparam), LPARAM(lparam)).0
-                }
+                MessageResult::Ignored => DefWindowProcW(self.hwnd, msg, wparam, lparam),
                 MessageResult::Value(value) => value,
             }
         }

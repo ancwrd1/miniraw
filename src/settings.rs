@@ -12,7 +12,7 @@ use crate::{REG_KEY_NAME, REG_VALUE_NAME, utf16z};
 
 /// The registry functions return a raw `LSTATUS` rather than a `Result`.
 fn succeeded(rc: LSTATUS) -> bool {
-    rc.0 == ERROR_SUCCESS
+    rc == ERROR_SUCCESS
 }
 
 pub struct AppSettings {
